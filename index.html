@@ -21,7 +21,7 @@
     #canvas-wrap { position: relative; flex: 1; width: 100%; }
     canvas { display: block; width: 100%; height: 100%; }
     .panel {
-      position: absolute; top: 14px; right: 14px; width: 310px; max-width: calc(100vw - 28px);
+      position: absolute; top: 14px; right: 14px; width: 315px; max-width: calc(100vw - 28px);
       background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(8px);
       border: 1px solid #334155; border-radius: 12px; padding: 14px; font-size: 13px; line-height: 1.45;
     }
@@ -98,7 +98,7 @@
       }
       if (!loadedThree) {
         document.getElementById('canvas-wrap').innerHTML =
-          '<div class="err-box"><b>Не удалось загрузить библиотеку Three.js.</b><br>Проверьте подключение к интернету, отключите блокировщик рекламы или проверьте, не блокирует ли сеть внешние скрипты (cdnjs / unpkg).</div>';
+          '<div class="err-box"><b>Не удалось загрузить библиотеку Three.js.</b><br>Проверьте подключение к интернету или отключите блокировщик рекламы/скриптов.</div>';
         return;
       }
       for (const u of controlsUrls) {
@@ -311,109 +311,159 @@
         `;
       }
 
+      function createSineWaveMesh(xStart, xEnd, segments, color, planeAngle) {
+        const pts = [];
+        for (let i = 0; i <= segments; i++) {
+          const x = xStart + ((xEnd - xStart) * i) / segments;
+          pts.push(new THREE.Vector3(x, 0, 0));
+        }
+        const geom = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = new THREE.LineBasicMaterial({ color });
+        const line = new THREE.Line(geom, mat);
+        return { line, geom, xStart, xEnd, segments, planeAngle };
+      }
+
+      function updateSineWave(waveObj, t, amp, kFreq) {
+        const pos = waveObj.geom.attributes.position;
+        const cosA = Math.cos(waveObj.planeAngle);
+        const sinA = Math.sin(waveObj.planeAngle);
+        for (let i = 0; i <= waveObj.segments; i++) {
+          const x = waveObj.xStart + ((waveObj.xEnd - waveObj.xStart) * i) / waveObj.segments;
+          const val = Math.sin(t * 4 - x * kFreq) * amp;
+          pos.setXYZ(i, x, val * cosA, val * sinA);
+        }
+        pos.needsUpdate = true;
+      }
+
       function buildPolarization() {
         clearScene();
         const rad = (state.analyzerAngle * Math.PI) / 180;
-        const intensity = Math.pow(Math.cos(rad), 2);
+        const cosVal = Math.cos(rad);
+        const intensity = cosVal * cosVal;
+
+        const axis = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.018, 0.018, 8.8, 8),
+          new THREE.MeshBasicMaterial({ color: 0x334155 })
+        );
+        axis.rotation.z = Math.PI / 2;
+        modeGroup.add(axis);
 
         const pol = new THREE.Mesh(
-          new THREE.CylinderGeometry(1.4, 1.4, 0.12, 32),
-          new THREE.MeshStandardMaterial({ color: 0x0284c7, transparent: true, opacity: 0.45 })
+          new THREE.CylinderGeometry(1.4, 1.4, 0.1, 32),
+          new THREE.MeshStandardMaterial({ color: 0x0284c7, transparent: true, opacity: 0.35 })
         );
         pol.rotation.z = Math.PI / 2;
         pol.position.set(-1.5, 0, 0);
         modeGroup.add(pol);
 
+        const polAxis = new THREE.Mesh(
+          new THREE.BoxGeometry(0.12, 2.5, 0.06),
+          new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+        );
+        polAxis.position.set(-1.5, 0, 0);
+        modeGroup.add(polAxis);
+
         const ana = new THREE.Mesh(
-          new THREE.CylinderGeometry(1.4, 1.4, 0.12, 32),
-          new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.45 })
+          new THREE.CylinderGeometry(1.4, 1.4, 0.1, 32),
+          new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.35 })
         );
         ana.rotation.z = Math.PI / 2;
         ana.position.set(1.5, 0, 0);
         modeGroup.add(ana);
 
         const axisLine = new THREE.Mesh(
-          new THREE.BoxGeometry(0.16, 2.6, 0.08),
+          new THREE.BoxGeometry(0.14, 2.5, 0.06),
           new THREE.MeshBasicMaterial({ color: 0xfacc15 })
         );
         axisLine.position.set(1.5, 0, 0);
         axisLine.rotation.x = rad;
         modeGroup.add(axisLine);
 
-        const arrows = [];
-        for (let i = 0; i < 18; i++) {
-          const x = -4.2 + i * 0.48;
-          let angle = 0;
-          let amp = 0.9;
-          if (x < -1.5) {
-            angle = (i * 1.1) % Math.PI;
-          } else if (x < 1.5) {
-            angle = 0;
-          } else {
-            angle = rad;
-            amp = 0.9 * Math.cos(rad);
-          }
-          const bar = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.03, 0.03, 1, 8),
-            new THREE.MeshBasicMaterial({ color: x > 1.5 ? 0x38bdf8 : 0xf43f5e })
-          );
-          bar.position.set(x, 0, 0);
-          bar.rotation.x = angle;
-          modeGroup.add(bar);
-          arrows.push({ bar, x, amp });
-        }
+        // Волны до поляризатора (две ортогональные составляющие неполяризованного света)
+        const unpolA = createSineWaveMesh(-4.3, -1.5, 70, 0xf43f5e, 0);
+        const unpolB = createSineWaveMesh(-4.3, -1.5, 70, 0xfb923c, Math.PI / 2);
+        // Плоская волна после поляризатора (вдоль оси Y)
+        const midWave = createSineWaveMesh(-1.5, 1.5, 70, 0x38bdf8, 0);
+        // Волна после анализатора (поворот на угол α и амплитуда |cos α|)
+        const outWave = createSineWaveMesh(1.5, 4.3, 70, 0xfacc15, rad);
+        modeGroup.add(unpolA.line, unpolB.line, midWave.line, outWave.line);
 
         const screen = new THREE.Mesh(
-          new THREE.CircleGeometry(1.3, 32),
-          new THREE.MeshBasicMaterial({ color: new THREE.Color(intensity, intensity * 0.95, intensity * 0.7) })
+          new THREE.CircleGeometry(1.25, 32),
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(intensity, intensity * 0.95, intensity * 0.6) })
         );
         screen.rotation.y = -Math.PI / 2;
-        screen.position.set(4.3, 0, 0);
+        screen.position.set(4.35, 0, 0);
         modeGroup.add(screen);
 
         animHooks.push((t) => {
-          arrows.forEach(a => {
-            const wave = Math.sin(t * 4 - a.x * 2.2) * a.amp;
-            a.bar.scale.y = Math.max(0.02, Math.abs(wave) * 1.6);
-          });
+          const kFreq = 2.4;
+          const ampIn = 0.85;
+          const ampOut = ampIn * Math.abs(cosVal);
+
+          const posA = unpolA.geom.attributes.position;
+          const posB = unpolB.geom.attributes.position;
+          for (let i = 0; i <= unpolA.segments; i++) {
+            const x = unpolA.xStart + ((unpolA.xEnd - unpolA.xStart) * i) / unpolA.segments;
+            const yVal = Math.sin(t * 4 - x * kFreq + 0.4) * ampIn;
+            const zVal = Math.sin(t * 4 - x * kFreq - 0.7) * ampIn;
+            posA.setXYZ(i, x, yVal, 0);
+            posB.setXYZ(i, x, 0, zVal);
+          }
+          posA.needsUpdate = true;
+          posB.needsUpdate = true;
+
+          updateSineWave(midWave, t, ampIn, kFreq);
+          updateSineWave(outWave, t, ampOut, kFreq);
         });
 
         panel.innerHTML = `
           <h2>3. Поляризация света</h2>
-          <div>При повороте анализатора на 90° свет полностью гасится. Продольные волны так себя не ведут.</div>
+          <div>Синусоиды показывают колебания вектора напряжённости <b>E</b>: после поляризатора волна становится плоской, а анализатор пропускает составляющую вдоль угла α.</div>
           <div class="control">
             <label><span>Угол анализатора α</span><b>${state.analyzerAngle}° (I = ${(intensity * 100).toFixed(0)}%)</b></label>
             <input type="range" min="0" max="180" value="${state.analyzerAngle}" oninput="updateParam('analyzerAngle', +this.value)">
           </div>
           <div class="formula">Закон Малюса: I = I₀ · cos²(${state.analyzerAngle}°)</div>
-          <div class="conclusion"><b>Вывод:</b> Гашение света доказывает <b>поперечность</b> световой волны — ключевой признак электромагнитной волны.</div>
+          <div class="conclusion"><b>Вывод:</b> Гашение волны при α = 90° доказывает <b>поперечность</b> световой волны.</div>
         `;
       }
 
       function buildEMWave() {
         clearScene();
-        const count = 42;
-        const eBars = [], bBars = [];
         const axis = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.025, 0.025, 9.5, 8),
+          new THREE.CylinderGeometry(0.025, 0.025, 9.6, 8),
           new THREE.MeshBasicMaterial({ color: 0x94a3b8 })
         );
         axis.rotation.z = Math.PI / 2;
         modeGroup.add(axis);
 
+        const segs = 140;
+        const ePts = [], bPts = [];
+        for (let i = 0; i <= segs; i++) {
+          const x = -4.6 + (9.2 * i) / segs;
+          ePts.push(new THREE.Vector3(x, 0, 0));
+          bPts.push(new THREE.Vector3(x, 0, 0));
+        }
+        const eGeom = new THREE.BufferGeometry().setFromPoints(ePts);
+        const bGeom = new THREE.BufferGeometry().setFromPoints(bPts);
+        const eCurve = new THREE.Line(eGeom, new THREE.LineBasicMaterial({ color: 0xf43f5e }));
+        const bCurve = new THREE.Line(bGeom, new THREE.LineBasicMaterial({ color: 0x38bdf8 }));
+        modeGroup.add(eCurve, bCurve);
+
+        const count = 24;
+        const eBars = [], bBars = [];
         for (let i = 0; i < count; i++) {
           const x = -4.5 + (i / (count - 1)) * 9;
           const eBar = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.03, 0.03, 1, 8),
+            new THREE.CylinderGeometry(0.022, 0.022, 1, 8),
             new THREE.MeshBasicMaterial({ color: 0xf43f5e })
           );
-          eBar.position.set(x, 0, 0);
           const bBar = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.03, 0.03, 1, 8),
+            new THREE.CylinderGeometry(0.022, 0.022, 1, 8),
             new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
           );
           bBar.rotation.x = Math.PI / 2;
-          bBar.position.set(x, 0, 0);
           modeGroup.add(eBar, bBar);
           eBars.push({ mesh: eBar, x });
           bBars.push({ mesh: bBar, x });
@@ -421,20 +471,32 @@
 
         animHooks.push((t) => {
           const k = (550 / state.lambda) * 1.4;
-          eBars.forEach((item, idx) => {
-            const val = Math.sin(t * 3.5 - item.x * k) * 1.5;
-            item.mesh.scale.y = Math.max(0.02, Math.abs(val));
-            item.mesh.position.y = val / 2;
+          const amp = 1.5;
 
-            const bVal = val;
-            bBars[idx].mesh.scale.y = Math.max(0.02, Math.abs(bVal));
-            bBars[idx].mesh.position.z = bVal / 2;
+          const ePos = eGeom.attributes.position;
+          const bPos = bGeom.attributes.position;
+          for (let i = 0; i <= segs; i++) {
+            const x = -4.6 + (9.2 * i) / segs;
+            const val = Math.sin(t * 3.5 - x * k) * amp;
+            ePos.setXYZ(i, x, val, 0);
+            bPos.setXYZ(i, x, 0, val);
+          }
+          ePos.needsUpdate = true;
+          bPos.needsUpdate = true;
+
+          eBars.forEach((item, idx) => {
+            const val = Math.sin(t * 3.5 - item.x * k) * amp;
+            item.mesh.scale.y = Math.max(0.02, Math.abs(val));
+            item.mesh.position.set(item.x, val / 2, 0);
+
+            bBars[idx].mesh.scale.y = Math.max(0.02, Math.abs(val));
+            bBars[idx].mesh.position.set(bBars[idx].x, 0, val / 2);
           });
         });
 
         panel.innerHTML = `
           <h2>4. Электромагнитная волна</h2>
-          <div>Векторы напряжённости <b>E</b> (красный) и магнитной индукции <b>B</b> (синий) колеблются взаимно перпендикулярно и перпендикулярно лучу.</div>
+          <div>Векторы <b>E</b> (красная волна) и <b>B</b> (синяя волна) колеблются в фазе во взаимно перпендикулярных плоскостях, а волна распространяется вдоль оси X.</div>
           <div class="control">
             <label><span>Длина волны λ</span><b>${state.lambda} нм</b></label>
             <input type="range" min="400" max="700" value="${state.lambda}" oninput="updateParam('lambda', +this.value)">
