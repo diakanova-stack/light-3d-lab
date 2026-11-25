@@ -3,87 +3,174 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ЦО 11.6.1.3 • Электромагнитная природа света (3D)</title>
+  <title>ЦО 11.6.1.3 • Экспериментальное доказательство электромагнитной природы света</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-    body { background: #070b14; color: #f1f5f9; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-    header {
-      padding: 10px 16px; background: rgba(12, 19, 34, 0.95); border-bottom: 1px solid #1e293b;
-      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; z-index: 10;
+    body { background: #050811; color: #f1f5f9; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+
+    .top-bar {
+      padding: 12px 16px;
+      display: flex; flex-wrap: wrap; align-items: stretch; justify-content: space-between; gap: 12px;
+      z-index: 10; pointer-events: none;
     }
-    .title-badge { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .co-tag { background: #0284c7; color: #fff; font-weight: 700; font-size: 12px; padding: 3px 8px; border-radius: 6px; }
-    header h1 { font-size: 15px; font-weight: 600; }
-    .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
-    .tab {
-      padding: 6px 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b;
-      color: #cbd5e1; cursor: pointer; font-size: 13px;
+    .title-card {
+      pointer-events: auto;
+      background: rgba(10, 17, 32, 0.9); border: 1px solid #1e293b; border-radius: 14px;
+      padding: 10px 16px; display: flex; flex-direction: column; justify-content: center; gap: 4px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
     }
-    .tab.active { background: #0284c7; border-color: #38bdf8; color: #fff; font-weight: 600; }
-    #canvas-wrap { position: relative; flex: 1; width: 100%; }
-    canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+    .title-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94a3b8; }
+    .co-badge {
+      background: #0284c7; color: #fff; font-weight: 700; font-size: 11px;
+      padding: 2px 8px; border-radius: 6px; letter-spacing: 0.4px;
+    }
+    .title-card h1 { font-size: 16px; font-weight: 700; color: #f8fafc; line-height: 1.25; }
+
+    .tabs-card {
+      pointer-events: auto;
+      background: rgba(10, 17, 32, 0.9); border: 1px solid #1e293b; border-radius: 14px;
+      padding: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    }
+    .tab-btn {
+      padding: 10px 16px; border-radius: 10px; border: 1px solid transparent;
+      background: transparent; color: #cbd5e1; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: 0.18s; text-align: center; line-height: 1.2;
+    }
+    .tab-btn:hover { background: rgba(30, 41, 59, 0.85); color: #fff; }
+    .tab-btn.active {
+      background: #0284c7; border-color: #38bdf8; color: #fff;
+      box-shadow: 0 0 18px rgba(2, 132, 199, 0.45);
+    }
+
+    #stage-wrap { position: relative; flex: 1; width: 100%; overflow: hidden; }
+    canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
     canvas:active { cursor: grabbing; }
-    .panel {
-      position: absolute; top: 14px; left: 14px; width: 320px; max-width: calc(100vw - 28px);
-      background: rgba(15, 23, 42, 0.92); border: 1px solid #334155; border-radius: 12px;
-      padding: 14px; font-size: 13px; line-height: 1.45; z-index: 5;
+
+    #labels-layer { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+    .scene-tag {
+      position: absolute; transform: translate(-50%, -50%);
+      background: rgba(10, 17, 32, 0.9); border: 1px solid #475569; color: #f8fafc;
+      padding: 5px 11px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      white-space: nowrap; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
     }
-    .stage-label { font-size: 11px; text-transform: uppercase; color: #38bdf8; font-weight: 700; margin-bottom: 4px; }
-    .panel h2 { font-size: 15px; margin-bottom: 6px; }
-    .control { margin-top: 10px; }
-    .control label { display: flex; justify-content: space-between; margin-bottom: 4px; color: #cbd5e1; }
-    .control input[type="range"] { width: 100%; accent-color: #38bdf8; }
-    .formula {
-      margin-top: 10px; padding: 8px 10px; background: #090d16; border-left: 3px solid #38bdf8;
-      border-radius: 6px; font-family: ui-monospace, monospace; font-size: 12px;
+
+    .side-panel {
+      position: absolute; top: 8px; left: 16px; width: 340px; max-width: calc(100vw - 32px);
+      background: rgba(10, 17, 32, 0.92); backdrop-filter: blur(10px);
+      border: 1px solid #1e293b; border-radius: 16px; padding: 16px;
+      z-index: 6; box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
     }
-    .conclusion { margin-top: 10px; color: #94a3b8; font-size: 12.5px; }
-    .camera-bar {
-      position: absolute; bottom: 14px; left: 14px; display: flex; flex-wrap: wrap; gap: 6px;
-      background: rgba(15, 23, 42, 0.9); padding: 6px 10px; border-radius: 10px; border: 1px solid #334155; z-index: 5;
+    .stage-kicker {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.7px;
+      text-transform: uppercase; color: #38bdf8; margin-bottom: 6px;
+    }
+    .side-panel h2 { font-size: 18px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
+    .side-desc { font-size: 13px; color: #cbd5e1; line-height: 1.5; margin-bottom: 14px; }
+    .side-desc code { color: #38bdf8; font-family: ui-monospace, SFMono-Regular, monospace; }
+
+    .ctrl-box {
+      background: rgba(15, 23, 42, 0.85); border: 1px solid #1e293b;
+      border-radius: 12px; padding: 12px; margin-bottom: 10px;
+    }
+    .ctrl-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; }
+    .ctrl-val {
+      background: #0f172a; border: 1px solid #334155; color: #38bdf8;
+      padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;
+    }
+    input[type="range"] { width: 100%; accent-color: #38bdf8; cursor: pointer; }
+    .scale-ticks {
+      display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-top: 5px;
+    }
+
+    .formula-box {
+      background: rgba(9, 14, 26, 0.95); border-left: 3px solid #38bdf8;
+      border-radius: 8px; padding: 9px 12px; font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 12px; color: #e2e8f0; margin-top: 8px;
+    }
+
+    .bottom-hud {
+      position: absolute; bottom: 14px; left: 16px; right: 16px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      pointer-events: none; z-index: 6;
+    }
+    .cam-group, .controls-hint {
+      pointer-events: auto;
+      background: rgba(10, 17, 32, 0.9); border: 1px solid #1e293b;
+      border-radius: 12px; padding: 6px 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+      font-size: 12px; color: #94a3b8; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
     }
     .cam-btn {
-      padding: 5px 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b;
-      color: #e2e8f0; font-size: 12px; cursor: pointer;
+      padding: 6px 12px; border-radius: 8px; border: 1px solid #334155;
+      background: #111827; color: #e2e8f0; font-size: 12px; font-weight: 600; cursor: pointer;
     }
+    .cam-btn:hover, .cam-btn.active { background: #1e293b; border-color: #38bdf8; color: #fff; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="title-badge">
-      <span class="co-tag">ЦО 11.6.1.3</span>
+  <div class="top-bar">
+    <div class="title-card">
+      <div class="title-meta">
+        <span class="co-badge">ЦО 11.6.1.3</span>
+        <span>Физика • 11 класс</span>
+      </div>
       <h1>Экспериментальное доказательство электромагнитной природы света</h1>
     </div>
-    <div class="tabs">
-      <button class="tab active" data-mode="interference">1. Интерференция</button>
-      <button class="tab" data-mode="diffraction">2. Дифракция</button>
-      <button class="tab" data-mode="polarization">3. Поляризация</button>
-      <button class="tab" data-mode="emwave">4. Волна Максвелла</button>
-    </div>
-  </header>
 
-  <div id="canvas-wrap">
-    <div class="panel" id="info-panel">Запуск модели...</div>
-    <canvas id="sceneCanvas"></canvas>
-    <div class="camera-bar">
-      <button class="cam-btn" onclick="setView(0.55, 0.35, 1.0)">3D-перспектива</button>
-      <button class="cam-btn" onclick="setView(0.0, 0.08, 1.0)">Вид сбоку</button>
-      <button class="cam-btn" onclick="setView(0.0, 1.25, 1.0)">Вид сверху</button>
+    <div class="tabs-card">
+      <button class="tab-btn active" data-mode="interference">1. Интерференция</button>
+      <button class="tab-btn" data-mode="diffraction">2. Дифракция</button>
+      <button class="tab-btn" data-mode="polarization">3. Поляризация</button>
+      <button class="tab-btn" data-mode="emwave">4. Волна<br>Максвелла</button>
+    </div>
+  </div>
+
+  <div id="stage-wrap">
+    <div class="side-panel" id="panel"></div>
+    <div id="labels-layer"></div>
+    <canvas id="c3d"></canvas>
+
+    <div class="bottom-hud">
+      <div class="cam-group">
+        <span>Камера:</span>
+        <button class="cam-btn active" data-cam="persp" onclick="setCameraPreset('persp', this)">3D-перспектива</button>
+        <button class="cam-btn" data-cam="side" onclick="setCameraPreset('side', this)">Вид сбоку</button>
+        <button class="cam-btn" data-cam="top" onclick="setCameraPreset('top', this)">Вид сверху</button>
+        <button class="cam-btn" data-cam="screen" onclick="setCameraPreset('screen', this)">Вид на экран</button>
+      </div>
+      <div class="controls-hint">
+        ЛКМ / 1 палец — вращение • Колёсико / щипок — масштаб • ПКМ / 2 пальца — сдвиг
+      </div>
     </div>
   </div>
 
   <script>
-    const wrap = document.getElementById('canvas-wrap');
-    const canvas = document.getElementById('sceneCanvas');
+    const wrap = document.getElementById('stage-wrap');
+    const canvas = document.getElementById('c3d');
     const ctx = canvas.getContext('2d');
-    const panel = document.getElementById('info-panel');
+    const panel = document.getElementById('panel');
+    const labelsLayer = document.getElementById('labels-layer');
 
     let mode = 'interference';
-    let state = { lambda: 532, slitDist: 1.2, analyzerAngle: 45, gratingPeriod: 2.0 };
-    let yaw = 0.55, pitch = 0.35, zoom = 1.0;
-    let dragging = false, lastX = 0, lastY = 0;
+    const state = {
+      lambda: 530,
+      slitDist: 1.8,
+      gratingPeriod: 2.0,
+      analyzerAngle: 45
+    };
 
-    function wavelengthToCss(nm) {
+    let cam = {
+      yaw: 0.62,
+      pitch: 0.34,
+      zoom: 1.0,
+      panX: 0,
+      panY: 0
+    };
+
+    let dragMode = null;
+    let lastX = 0, lastY = 0;
+
+    function wavelengthRgb(nm) {
       let r = 0, g = 0, b = 0;
       if (nm >= 380 && nm < 440) { r = -(nm - 440) / 60; b = 1; }
       else if (nm < 490) { g = (nm - 440) / 50; b = 1; }
@@ -91,184 +178,360 @@
       else if (nm < 580) { r = (nm - 510) / 70; g = 1; }
       else if (nm < 645) { r = 1; g = -(nm - 645) / 65; }
       else { r = 1; }
-      return `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
+      return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+
+    function rgba(rgb, a) {
+      return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${a})`;
     }
 
     function project(x, y, z, w, h) {
-      const cosY = Math.cos(yaw), sinY = Math.sin(yaw);
-      const cosP = Math.cos(pitch), sinP = Math.sin(pitch);
-      const x1 = x * cosY - z * sinY;
-      const z1 = x * sinY + z * cosY;
-      const y2 = y * cosP - z1 * sinP;
-      const z2 = y * sinP + z1 * cosP;
-      const scale = (Math.min(w, h) * 0.14 * zoom) / (1 + z2 * 0.08);
+      const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw);
+      const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+
+      const x1 = x * cy - z * sy;
+      const z1 = x * sy + z * cy;
+      const y2 = y * cp - z1 * sp;
+      const z2 = y * sp + z1 * cp;
+
+      const dist = 12;
+      const persp = dist / Math.max(3.5, dist + z2);
+      const scale = Math.min(w, h) * 0.145 * cam.zoom * persp;
+
       return {
-        sx: w * 0.56 + x1 * scale,
-        sy: h * 0.52 - y2 * scale
+        sx: w * 0.56 + cam.panX + x1 * scale,
+        sy: h * 0.52 + cam.panY - y2 * scale,
+        z: z2,
+        scale
       };
     }
 
-    function draw3DLine(pts, color, width = 2, w, h) {
-      if (pts.length < 2) return;
+    function drawPoly3D(pts3d, strokeStyle, lineWidth, fillStyle = null, w, h) {
+      if (pts3d.length < 2) return;
       ctx.beginPath();
-      pts.forEach((p, idx) => {
-        const pr = project(p[0], p[1], p[2], w, h);
-        if (idx === 0) ctx.moveTo(pr.sx, pr.sy);
-        else ctx.lineTo(pr.sx, pr.sy);
+      pts3d.forEach((pt, i) => {
+        const p = project(pt[0], pt[1], pt[2], w, h);
+        if (i === 0) ctx.moveTo(p.sx, p.sy);
+        else ctx.lineTo(p.sx, p.sy);
       });
-      ctx.strokeStyle = color;
-      ctx.lineWidth = width;
-      ctx.stroke();
+      if (fillStyle) {
+        ctx.closePath();
+        ctx.fillStyle = fillStyle;
+        ctx.fill();
+      }
+      if (strokeStyle) {
+        ctx.strokeStyle = strokeStyle;
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
+      }
+    }
+
+    function drawQuad3D(p00, p10, p11, p01, strokeStyle, fillStyle, w, h) {
+      drawPoly3D([p00, p10, p11, p01], strokeStyle, 1.5, fillStyle, w, h);
     }
 
     function renderPanel() {
       if (mode === 'interference') {
         panel.innerHTML = `
-          <div class="stage-label">Этап 1 • Волновая природа</div>
+          <div class="stage-kicker">Этап 1 • Волновая природа</div>
           <h2>Интерференция (опыт Юнга)</h2>
-          <div>Когерентные волны от двух щелей образуют светлые и тёмные полосы на экране.</div>
-          <div class="control">
-            <label><span>Длина волны λ</span><b>${state.lambda} нм</b></label>
-            <input type="range" min="420" max="680" value="${state.lambda}" oninput="updateParam('lambda', +this.value)">
+          <p class="side-desc">
+            Когерентные волны от щелей <b>S₁</b> и <b>S₂</b> накладываются друг на друга: где разность хода <code>Δr = kλ</code> — возникают светлые максимумы, где <code>Δr = (2k+1)λ/2</code> — тёмные минимумы.
+          </p>
+          <div class="ctrl-box">
+            <div class="ctrl-top">
+              <span>Длина волны λ</span>
+              <span class="ctrl-val">${state.lambda} нм</span>
+            </div>
+            <input type="range" min="400" max="700" value="${state.lambda}" oninput="setParam('lambda', +this.value)">
+            <div class="scale-ticks"><span>400 нм (фиол.)</span><span>550 нм (зел.)</span><span>700 нм (красн.)</span></div>
           </div>
-          <div class="control">
-            <label><span>Расстояние между щелями d</span><b>${state.slitDist.toFixed(1)} мм</b></label>
-            <input type="range" min="0.6" max="2.0" step="0.1" value="${state.slitDist}" oninput="updateParam('slitDist', +this.value)">
+          <div class="ctrl-box">
+            <div class="ctrl-top">
+              <span>Расстояние между щелями d</span>
+              <span class="ctrl-val">${state.slitDist.toFixed(1)} усл. ед.</span>
+            </div>
+            <input type="range" min="0.8" max="2.6" step="0.1" value="${state.slitDist}" oninput="setParam('slitDist', +this.value)">
           </div>
-          <div class="formula">Δx = λ · L / d</div>
-          <div class="conclusion"><b>Вывод:</b> Чередование полос доказывает волновую природу света.</div>
+          <div class="formula-box">Δx = λ · L / d</div>
         `;
       } else if (mode === 'diffraction') {
         panel.innerHTML = `
-          <div class="stage-label">Этап 2 • Измерение длины волны</div>
+          <div class="stage-kicker">Этап 2 • Измерение длины волны</div>
           <h2>Дифракция на решётке</h2>
-          <div>Свет отклоняется на штрихах решётки и даёт максимумы порядков k = 0, ±1, ±2.</div>
-          <div class="control">
-            <label><span>Длина волны λ</span><b>${state.lambda} нм</b></label>
-            <input type="range" min="400" max="700" value="${state.lambda}" oninput="updateParam('lambda', +this.value)">
+          <p class="side-desc">
+            Огибая узкие штрихи решётки, свет отклоняется от прямолинейного пути. Главные максимумы наблюдаются под углами <code>d·sin φ = kλ</code>.
+          </p>
+          <div class="ctrl-box">
+            <div class="ctrl-top">
+              <span>Длина волны лазера λ</span>
+              <span class="ctrl-val">${state.lambda} нм</span>
+            </div>
+            <input type="range" min="400" max="700" value="${state.lambda}" oninput="setParam('lambda', +this.value)">
           </div>
-          <div class="control">
-            <label><span>Период решётки d</span><b>${state.gratingPeriod.toFixed(1)} мкм</b></label>
-            <input type="range" min="1.2" max="3.0" step="0.2" value="${state.gratingPeriod}" oninput="updateParam('gratingPeriod', +this.value)">
+          <div class="ctrl-box">
+            <div class="ctrl-top">
+              <span>Период решётки d</span>
+              <span class="ctrl-val">${state.gratingPeriod.toFixed(1)} мкм</span>
+            </div>
+            <input type="range" min="1.2" max="3.0" step="0.1" value="${state.gratingPeriod}" oninput="setParam('gratingPeriod', +this.value)">
           </div>
-          <div class="formula">d · sin φ = k · λ</div>
-          <div class="conclusion"><b>Вывод:</b> По положению максимумов определяют длину волны.</div>
+          <div class="formula-box">d · sin φ = k · λ  ⇒  λ ≈ (d · x₁) / L</div>
         `;
       } else if (mode === 'polarization') {
         const rad = (state.analyzerAngle * Math.PI) / 180;
-        const iPct = Math.round(Math.pow(Math.cos(rad), 2) * 100);
+        const pct = Math.round(Math.pow(Math.cos(rad), 2) * 100);
         panel.innerHTML = `
-          <div class="stage-label">Этап 3 • Поперечность волны</div>
+          <div class="stage-kicker">Этап 3 • Поперечность волны</div>
           <h2>Поляризация света</h2>
-          <div>Поляризатор выделяет колебания в одной плоскости, анализатор поворачивает её на угол α.</div>
-          <div class="control">
-            <label><span>Угол анализатора α</span><b>${state.analyzerAngle}° (I = ${iPct}%)</b></label>
-            <input type="range" min="0" max="180" value="${state.analyzerAngle}" oninput="updateParam('analyzerAngle', +this.value)">
+          <p class="side-desc">
+            Поляризатор выделяет колебания в одной плоскости, а анализатор пропускает составляющую вдоль угла <code>α</code>. При повороте на 90° свет гасится.
+          </p>
+          <div class="ctrl-box">
+            <div class="ctrl-top">
+              <span>Угол анализатора α</span>
+              <span class="ctrl-val">${state.analyzerAngle}° (I = ${pct}%)</span>
+            </div>
+            <input type="range" min="0" max="180" value="${state.analyzerAngle}" oninput="setParam('analyzerAngle', +this.value)">
           </div>
-          <div class="formula">I = I₀ · cos²(${state.analyzerAngle}°)</div>
-          <div class="conclusion"><b>Вывод:</b> Гашение при α = 90° доказывает поперечность волны.</div>
+          <div class="formula-box">Закон Малюса: I = I₀ · cos²(${state.analyzerAngle}°)</div>
         `;
       } else {
         panel.innerHTML = `
-          <div class="stage-label">Этап 4 • Модель Максвелла</div>
-          <h2>Электромагнитная волна</h2>
-          <div>Взаимно перпендикулярные колебания электрического (<b>E</b>) и магнитного (<b>B</b>) полей.</div>
-          <div class="control">
-            <label><span>Длина волны λ</span><b>${state.lambda} нм</b></label>
-            <input type="range" min="400" max="700" value="${state.lambda}" oninput="updateParam('lambda', +this.value)">
+          <div class="stage-kicker">Этап 4 • Модель Максвелла</div>
+          <h2>Волна Максвелла</h2>
+          <p class="side-desc">
+            Световая волна — это связанные взаимно перпендикулярные колебания векторов <code>E</code> (электрическое поле) и <code>B</code> (магнитное поле), распространяющиеся со скоростью света.
+          </p>
+          <div class="ctrl-box">
+            <div class="ctrl-top">
+              <span>Длина волны λ</span>
+              <span class="ctrl-val">${state.lambda} нм</span>
+            </div>
+            <input type="range" min="400" max="700" value="${state.lambda}" oninput="setParam('lambda', +this.value)">
           </div>
-          <div class="formula">E ⊥ B ⊥ c,   c ≈ 3 · 10⁸ м/с</div>
-          <div class="conclusion"><b>Итог (11.6.1.3):</b> Свет — поперечная электромагнитная волна.</div>
+          <div class="formula-box">E ⊥ B ⊥ c,   c ≈ 3 · 10⁸ м/с</div>
         `;
       }
     }
 
-    function drawFrame(t) {
-      const w = wrap.clientWidth, h = wrap.clientHeight;
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w; canvas.height = h;
+    function drawGrid(w, h) {
+      const y = -2.1;
+      for (let i = -8; i <= 8; i++) {
+        drawPoly3D([[-8, y, i], [8, y, i]], 'rgba(51, 65, 85, 0.28)', 1, null, w, h);
+        drawPoly3D([[i, y, -8], [i, y, 8]], 'rgba(51, 65, 85, 0.28)', 1, null, w, h);
       }
-      ctx.clearRect(0, 0, w, h);
+    }
 
-      const col = wavelengthToCss(state.lambda);
-      draw3DLine([[-4.5, 0, 0], [4.5, 0, 0]], '#334155', 1.5, w, h);
+    function setLabels(items, w, h) {
+      labelsLayer.innerHTML = '';
+      items.forEach(({ text, pos }) => {
+        const p = project(pos[0], pos[1], pos[2], w, h);
+        const div = document.createElement('div');
+        div.className = 'scene-tag';
+        div.textContent = text;
+        div.style.left = `${p.sx}px`;
+        div.style.top = `${p.sy}px`;
+        labelsLayer.appendChild(div);
+      });
+    }
+
+    function drawScene(t, w, h) {
+      ctx.clearRect(0, 0, w, h);
+      drawGrid(w, h);
+
+      const rgb = wavelengthRgb(state.lambda);
+      const tags = [];
 
       if (mode === 'interference') {
         const d = state.slitDist;
-        for (const s of [-d / 2, d / 2]) {
-          for (let rIdx = 0; rIdx < 5; rIdx++) {
-            const p = ((t * 0.45 + rIdx / 5) % 1);
-            const rad = 0.2 + p * 3.8;
-            const pts = [];
-            for (let a = -1.1; a <= 1.1; a += 0.15) {
-              pts.push([-1.5 + Math.cos(a) * rad, 0, s + Math.sin(a) * rad]);
+        // Оптическая скамья
+        drawQuad3D([-5.2, -2.05, -0.45], [4.2, -2.05, -0.45], [4.2, -2.05, 0.45], [-5.2, -2.05, 0.45],
+          '#334155', 'rgba(15, 23, 42, 0.85)', w, h);
+
+        // Конусный пучок от лазера к щелям
+        const coneSteps = 18;
+        for (let i = 0; i < coneSteps; i++) {
+          const a1 = (i / coneSteps) * Math.PI * 2;
+          const a2 = ((i + 1) / coneSteps) * Math.PI * 2;
+          const rLaser = 0.22, rSlit = 1.15;
+          drawQuad3D(
+            [-4.1, -0.2 + Math.cos(a1) * rLaser, Math.sin(a1) * rLaser],
+            [-4.1, -0.2 + Math.cos(a2) * rLaser, Math.sin(a2) * rLaser],
+            [-1.6, -0.2 + Math.cos(a2) * rSlit, Math.sin(a2) * rSlit],
+            [-1.6, -0.2 + Math.cos(a1) * rSlit, Math.sin(a1) * rSlit],
+            null, rgba(rgb, 0.14), w, h
+          );
+        }
+
+        // Пластина с двумя щелями S1 и S2
+        const halfD = d * 0.45;
+        drawQuad3D([-1.6, -1.8, -2.2], [-1.6, -1.8, -halfD - 0.12], [-1.6, 1.4, -halfD - 0.12], [-1.6, 1.4, -2.2],
+          '#64748b', 'rgba(30, 41, 59, 0.9)', w, h);
+        drawQuad3D([-1.6, -1.8, -halfD + 0.12], [-1.6, -1.8, halfD - 0.12], [-1.6, 1.4, halfD - 0.12], [-1.6, 1.4, -halfD + 0.12],
+          '#64748b', 'rgba(30, 41, 59, 0.9)', w, h);
+        drawQuad3D([-1.6, -1.8, halfD + 0.12], [-1.6, -1.8, 2.2], [-1.6, 1.4, 2.2], [-1.6, 1.4, halfD + 0.12],
+          '#64748b', 'rgba(30, 41, 59, 0.9)', w, h);
+
+        // Волновые фронты от двух щелей
+        const speed = 0.42 * (530 / state.lambda);
+        for (const sZ of [-halfD, halfD]) {
+          for (let rIdx = 0; rIdx < 8; rIdx++) {
+            const phase = (t * speed + rIdx / 8) % 1;
+            const radius = 0.25 + phase * 4.6;
+            const alpha = (1 - phase) * 0.55;
+            const arcPts = [];
+            for (let a = -1.05; a <= 1.05; a += 0.12) {
+              arcPts.push([-1.55 + Math.cos(a) * radius, -0.2, sZ + Math.sin(a) * radius]);
             }
-            draw3DLine(pts, col, 2, w, h);
+            drawPoly3D(arcPts, rgba(rgb, alpha), 2.2, null, w, h);
           }
         }
-        for (let i = -8; i <= 8; i++) {
-          const zPos = i * 0.22;
-          const inten = Math.pow(Math.cos(zPos * d * (532 / state.lambda) * 2.2), 2);
-          const p1 = project(3.2, -1.3, zPos, w, h);
-          const p2 = project(3.2, 1.3, zPos, w, h);
-          ctx.beginPath();
-          ctx.moveTo(p1.sx, p1.sy);
-          ctx.lineTo(p2.sx, p2.sy);
-          ctx.strokeStyle = col;
-          ctx.globalAlpha = Math.max(0.05, inten);
-          ctx.lineWidth = 4;
-          ctx.stroke();
-          ctx.globalAlpha = 1;
+
+        // Экран с интерференционными полосами
+        const scrX = 3.5;
+        drawQuad3D([scrX, -1.8, -2.4], [scrX, -1.8, 2.4], [scrX, 1.4, 2.4], [scrX, 1.4, -2.4],
+          '#475569', 'rgba(9, 13, 22, 0.95)', w, h);
+
+        const strips = 36;
+        for (let i = 0; i < strips; i++) {
+          const z0 = -2.2 + (4.4 * i) / strips;
+          const z1 = -2.2 + (4.4 * (i + 1)) / strips;
+          const zMid = (z0 + z1) * 0.5;
+          const inten = Math.pow(Math.cos(zMid * d * (530 / state.lambda) * 2.1), 2);
+          drawQuad3D([scrX + 0.02, -1.45, z0], [scrX + 0.02, -1.45, z1], [scrX + 0.02, 1.05, z1], [scrX + 0.02, 1.05, z0],
+            null, rgba(rgb, inten * 0.92), w, h);
         }
+
+        tags.push(
+          { text: 'Лазер (когерентный свет)', pos: [-4.2, 0.85, 0] },
+          { text: 'Две щели S₁ и S₂', pos: [-1.6, 1.8, 0] },
+          { text: 'Экран (интерференционные полосы)', pos: [3.5, 1.85, 0] }
+        );
       } else if (mode === 'diffraction') {
-        draw3DLine([[-4.0, 0, 0], [-1.8, 0, 0]], col, 3, w, h);
-        const x1 = 0.85 * (state.lambda / 550) * (2.0 / state.gratingPeriod);
+        const gX = -2.0, sX = 3.5;
+        drawQuad3D([gX, -1.7, -1.8], [gX, -1.7, 1.8], [gX, 1.5, 1.8], [gX, 1.5, -1.8],
+          '#64748b', 'rgba(30, 41, 59, 0.85)', w, h);
+        drawQuad3D([sX, -1.8, -2.6], [sX, -1.8, 2.6], [sX, 1.6, 2.6], [sX, 1.6, -2.6],
+          '#475569', 'rgba(15, 23, 42, 0.92)', w, h);
+
+        drawPoly3D([[-4.4, -0.1, 0], [gX, -0.1, 0]], rgba(rgb, 0.95), 4, null, w, h);
+
+        const x1 = 0.95 * (state.lambda / 550) * (2.0 / state.gratingPeriod);
         [-2, -1, 0, 1, 2].forEach(k => {
-          draw3DLine([[-1.8, 0, 0], [3.2, 0, k * x1]], col, k === 0 ? 3 : 2, w, h);
+          const zEnd = k * x1;
+          if (Math.abs(zEnd) > 2.4) return;
+          drawPoly3D([[gX, -0.1, 0], [sX, -0.1, zEnd]], rgba(rgb, k === 0 ? 0.95 : 0.72), k === 0 ? 3.5 : 2.2, null, w, h);
+          const p = project(sX, -0.1, zEnd, w, h);
+          ctx.beginPath();
+          ctx.arc(p.sx, p.sy, (k === 0 ? 7 : 5) * p.scale / 22, 0, Math.PI * 2);
+          ctx.fillStyle = rgba(rgb, 1);
+          ctx.fill();
         });
+
+        tags.push(
+          { text: 'Дифракционная решётка (период d)', pos: [gX, 1.9, 0] },
+          { text: 'Экран со шкалой (L = 1.50 м)', pos: [sX, 2.0, 0] }
+        );
       } else if (mode === 'polarization') {
         const rad = (state.analyzerAngle * Math.PI) / 180;
-        const ampOut = Math.abs(Math.cos(rad)) * 1.1;
-        const pts1 = [], pts2 = [], pts3 = [];
-        for (let i = 0; i <= 40; i++) {
-          const x = -4.2 + (8.4 * i) / 40;
+        const ampOut = Math.abs(Math.cos(rad)) * 1.15;
+
+        drawPoly3D([[-4.6, 0, 0], [4.6, 0, 0]], 'rgba(100, 116, 139, 0.45)', 1.5, null, w, h);
+
+        const wIn1 = [], wIn2 = [], wMid = [], wOut = [];
+        for (let i = 0; i <= 50; i++) {
+          const x = -4.5 + (9.0 * i) / 50;
           const v = Math.sin(t * 4 - x * 2.2);
-          if (x < -1.2) pts1.push([x, v * 1.1, Math.cos(t * 4 - x * 2.2 + 1) * 0.7]);
-          else if (x < 1.2) pts2.push([x, v * 1.1, 0]);
-          else pts3.push([x, v * ampOut * Math.cos(rad), v * ampOut * Math.sin(rad)]);
+          if (x < -1.4) {
+            wIn1.push([x, v * 1.1, 0]);
+            wIn2.push([x, 0, Math.cos(t * 4 - x * 2.2 + 0.6) * 0.9]);
+          } else if (x < 1.4) {
+            wMid.push([x, v * 1.15, 0]);
+          } else {
+            wOut.push([x, v * ampOut * Math.cos(rad), v * ampOut * Math.sin(rad)]);
+          }
         }
-        draw3DLine(pts1, '#f43f5e', 2, w, h);
-        draw3DLine(pts2, '#38bdf8', 2.5, w, h);
-        draw3DLine(pts3, '#facc15', 2.5, w, h);
+        drawPoly3D(wIn1, 'rgba(244, 63, 94, 0.85)', 2.2, null, w, h);
+        drawPoly3D(wIn2, 'rgba(251, 146, 60, 0.85)', 2.2, null, w, h);
+        drawPoly3D(wMid, 'rgba(56, 189, 248, 0.95)', 2.8, null, w, h);
+        drawPoly3D(wOut, 'rgba(250, 204, 21, 0.95)', 2.8, null, w, h);
+
+        tags.push(
+          { text: 'Поляризатор', pos: [-1.4, 1.7, 0] },
+          { text: 'Анализатор', pos: [1.4, 1.7, 0] }
+        );
       } else {
-        const k = (550 / state.lambda) * 1.5;
-        const ePts = [], bPts = [];
-        for (let i = 0; i <= 60; i++) {
-          const x = -4.2 + (8.4 * i) / 60;
-          const val = Math.sin(t * 3.5 - x * k) * 1.2;
-          ePts.push([x, val, 0]);
-          bPts.push([x, 0, val]);
+        const k = (550 / state.lambda) * 1.45;
+        const eLine = [], bLine = [];
+        for (let i = 0; i <= 70; i++) {
+          const x = -4.5 + (9.0 * i) / 70;
+          const val = Math.sin(t * 3.5 - x * k) * 1.35;
+          eLine.push([x, val, 0]);
+          bLine.push([x, 0, val]);
+          if (i % 4 === 0) {
+            drawPoly3D([[x, 0, 0], [x, val, 0]], 'rgba(244, 63, 94, 0.55)', 1.5, null, w, h);
+            drawPoly3D([[x, 0, 0], [x, 0, val]], 'rgba(56, 189, 248, 0.55)', 1.5, null, w, h);
+          }
         }
-        draw3DLine(ePts, '#f43f5e', 2.5, w, h);
-        draw3DLine(bPts, '#38bdf8', 2.5, w, h);
+        drawPoly3D(eLine, '#f43f5e', 2.8, null, w, h);
+        drawPoly3D(bLine, '#38bdf8', 2.8, null, w, h);
+
+        tags.push(
+          { text: 'Вектор E (электрическое поле)', pos: [-2.0, 1.75, 0] },
+          { text: 'Вектор B (магнитное поле)', pos: [1.8, 0.35, 1.65] }
+        );
       }
+
+      setLabels(tags, w, h);
     }
 
-    window.updateParam = (key, val) => { state[key] = val; renderPanel(); };
-    window.setView = (y, p, z) => { yaw = y; pitch = p; zoom = z; };
+    window.setParam = (key, val) => {
+      state[key] = val;
+      renderPanel();
+    };
 
-    canvas.addEventListener('mousedown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
-    window.addEventListener('mouseup', () => dragging = false);
-    window.addEventListener('mousemove', e => {
-      if (!dragging) return;
-      yaw += (e.clientX - lastX) * 0.008;
-      pitch = Math.max(-1.2, Math.min(1.2, pitch + (e.clientY - lastY) * 0.008));
-      lastX = e.clientX; lastY = e.clientY;
+    window.setCameraPreset = (preset, btn) => {
+      document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      cam.panX = 0;
+      cam.panY = 0;
+      cam.zoom = 1.0;
+      if (preset === 'persp') { cam.yaw = 0.62; cam.pitch = 0.34; }
+      else if (preset === 'side') { cam.yaw = 0.0; cam.pitch = 0.06; }
+      else if (preset === 'top') { cam.yaw = 0.0; cam.pitch = 1.25; }
+      else if (preset === 'screen') { cam.yaw = 1.48; cam.pitch = 0.12; }
+    };
+
+    canvas.addEventListener('mousedown', e => {
+      dragMode = e.button === 2 ? 'pan' : 'rot';
+      lastX = e.clientX;
+      lastY = e.clientY;
     });
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
+    window.addEventListener('mouseup', () => { dragMode = null; });
+    window.addEventListener('mousemove', e => {
+      if (!dragMode) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (dragMode === 'rot') {
+        cam.yaw += dx * 0.008;
+        cam.pitch = Math.max(-1.35, Math.min(1.35, cam.pitch + dy * 0.008));
+      } else {
+        cam.panX += dx;
+        cam.panY += dy;
+      }
+    });
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      cam.zoom = Math.max(0.55, Math.min(2.2, cam.zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
+    }, { passive: false });
 
-    document.querySelectorAll('.tab').forEach(btn => {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         mode = btn.dataset.mode;
         renderPanel();
@@ -276,11 +539,18 @@
     });
 
     renderPanel();
-    const start = performance.now();
-    (function loop(now) {
-      drawFrame((now - start) / 1000);
-      requestAnimationFrame(loop);
-    })(start);
+    const startTime = performance.now();
+    function frame(now) {
+      const w = Math.max(1, wrap.clientWidth);
+      const h = Math.max(1, wrap.clientHeight);
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+      drawScene((now - startTime) / 1000, w, h);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
   </script>
 </body>
 </html>
