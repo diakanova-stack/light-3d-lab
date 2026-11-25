@@ -3,15 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D Лаборатория: Электромагнитная природа света (11.6.1.3)</title>
+  <title>ЦО 11.6.1.3 • Электромагнитная природа света (3D)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-    body { background: #090d16; color: #f1f5f9; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+    body { background: #070b14; color: #f1f5f9; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
     header {
-      padding: 10px 16px; background: rgba(15, 23, 42, 0.92); border-bottom: 1px solid #1e293b;
+      padding: 10px 16px; background: rgba(12, 19, 34, 0.94); border-bottom: 1px solid #1e293b;
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; z-index: 10;
     }
-    header h1 { font-size: 15px; font-weight: 600; color: #38bdf8; }
+    .title-badge { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .co-tag {
+      background: #0284c7; color: #fff; font-weight: 700; font-size: 12px;
+      padding: 3px 8px; border-radius: 6px; letter-spacing: 0.3px;
+    }
+    header h1 { font-size: 15px; font-weight: 600; color: #f8fafc; }
     .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
     .tab {
       padding: 6px 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b;
@@ -20,24 +25,40 @@
     .tab.active { background: #0284c7; border-color: #38bdf8; color: #fff; font-weight: 600; }
     #canvas-wrap { position: relative; flex: 1; width: 100%; }
     canvas { display: block; width: 100%; height: 100%; }
-    .panel {
-      position: absolute; top: 14px; right: 14px; width: 315px; max-width: calc(100vw - 28px);
-      background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(8px);
-      border: 1px solid #334155; border-radius: 12px; padding: 14px; font-size: 13px; line-height: 1.45;
+
+    .label-3d {
+      position: absolute; transform: translate(-50%, -50%); pointer-events: none;
+      background: rgba(15, 23, 42, 0.88); border: 1px solid #475569; color: #f8fafc;
+      padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      white-space: nowrap; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
     }
-    .panel h2 { font-size: 14px; color: #7dd3fc; margin-bottom: 8px; }
+
+    .panel {
+      position: absolute; top: 14px; left: 14px; width: 325px; max-width: calc(100vw - 28px);
+      background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px);
+      border: 1px solid #334155; border-radius: 12px; padding: 14px; font-size: 13px; line-height: 1.45;
+      z-index: 5;
+    }
+    .stage-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: #38bdf8; font-weight: 700; margin-bottom: 4px; }
+    .panel h2 { font-size: 15px; color: #f8fafc; margin-bottom: 6px; }
     .control { margin-top: 10px; }
     .control label { display: flex; justify-content: space-between; margin-bottom: 4px; color: #cbd5e1; }
-    .control input[type="range"] { width: 100%; accent-color: #38bdf8; }
+    .control input[type="range"] { width: 100%; accent-color: #38bdf8; cursor: pointer; }
     .formula {
-      margin-top: 10px; padding: 8px 10px; background: #0f172a; border-left: 3px solid #38bdf8;
+      margin-top: 10px; padding: 8px 10px; background: #090d16; border-left: 3px solid #38bdf8;
       border-radius: 6px; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: #e2e8f0;
     }
     .conclusion { margin-top: 10px; color: #94a3b8; font-size: 12.5px; }
-    .camera-bar {
-      position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
-      display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
-      background: rgba(15, 23, 42, 0.85); padding: 6px 10px; border-radius: 10px; border: 1px solid #334155;
+
+    .bottom-bar {
+      position: absolute; bottom: 14px; left: 14px; right: 14px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+      pointer-events: none; z-index: 5;
+    }
+    .camera-bar, .hint-bar {
+      pointer-events: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+      background: rgba(15, 23, 42, 0.88); padding: 6px 10px; border-radius: 10px; border: 1px solid #334155;
+      font-size: 12px; color: #cbd5e1;
     }
     .cam-btn {
       padding: 5px 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b;
@@ -52,22 +73,30 @@
 </head>
 <body>
   <header>
-    <h1>11.6.1.3 • Электромагнитная природа света (3D)</h1>
+    <div class="title-badge">
+      <span class="co-tag">ЦО 11.6.1.3</span>
+      <h1>Экспериментальное доказательство электромагнитной природы света</h1>
+    </div>
     <div class="tabs">
       <button class="tab active" data-mode="interference">1. Интерференция</button>
       <button class="tab" data-mode="diffraction">2. Дифракция</button>
       <button class="tab" data-mode="polarization">3. Поляризация</button>
-      <button class="tab" data-mode="emwave">4. ЭМ-волна Максвелла</button>
+      <button class="tab" data-mode="emwave">4. Волна Максвелла</button>
     </div>
   </header>
 
   <div id="canvas-wrap">
     <div class="panel" id="info-panel">Загрузка 3D-модели...</div>
-    <div class="camera-bar">
-      <button class="cam-btn" onclick="setCam(7, 4.5, 9)">3D-перспектива</button>
-      <button class="cam-btn" onclick="setCam(0, 1.2, 11)">Вид сбоку</button>
-      <button class="cam-btn" onclick="setCam(0, 12, 0.1)">Вид сверху</button>
-      <button class="cam-btn" onclick="setCam(9, 1.5, 0)">Вид на экран</button>
+    <div id="labels-layer"></div>
+    <div class="bottom-bar">
+      <div class="camera-bar">
+        <span>Камера:</span>
+        <button class="cam-btn" onclick="setCam(7.5, 4.2, 8.8)">3D-перспектива</button>
+        <button class="cam-btn" onclick="setCam(0, 1.2, 11)">Вид сбоку</button>
+        <button class="cam-btn" onclick="setCam(0, 12, 0.1)">Вид сверху</button>
+        <button class="cam-btn" onclick="setCam(9.5, 1.5, 0)">Вид на экран</button>
+      </div>
+      <div class="hint-bar">ЛКМ / 1 палец — вращение • Колёсико — масштаб • ПКМ — сдвиг</div>
     </div>
   </div>
 
@@ -110,11 +139,13 @@
     function startLab() {
       const wrap = document.getElementById('canvas-wrap');
       const panel = document.getElementById('info-panel');
+      const labelsLayer = document.getElementById('labels-layer');
+
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x090d16);
+      scene.background = new THREE.Color(0x070b14);
 
       const camera = new THREE.PerspectiveCamera(45, Math.max(1, wrap.clientWidth) / Math.max(1, wrap.clientHeight), 0.1, 100);
-      camera.position.set(7, 4.5, 9);
+      camera.position.set(7.5, 4.2, 8.8);
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(wrap.clientWidth, wrap.clientHeight);
@@ -122,22 +153,54 @@
       wrap.appendChild(renderer.domElement);
 
       const controls = THREE.OrbitControls ? new THREE.OrbitControls(camera, renderer.domElement) : null;
-      if (controls) controls.enableDamping = true;
+      if (controls) {
+        controls.enableDamping = true;
+        controls.target.set(0.5, 0, 0);
+      }
 
-      scene.add(new THREE.AmbientLight(0xffffff, 0.65));
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-      dirLight.position.set(5, 10, 7);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.95);
+      dirLight.position.set(6, 10, 7);
       scene.add(dirLight);
 
-      const grid = new THREE.GridHelper(16, 16, 0x1e293b, 0x111827);
+      const grid = new THREE.GridHelper(18, 18, 0x1e293b, 0x0f172a);
       grid.position.y = -2.2;
       scene.add(grid);
 
       let mode = 'interference';
-      let state = { lambda: 550, slitDist: 1.2, analyzerAngle: 45, gratingPeriod: 2.0 };
+      let state = { lambda: 532, slitDist: 1.2, analyzerAngle: 45, gratingPeriod: 2.0 };
       let modeGroup = new THREE.Group();
       scene.add(modeGroup);
       let animHooks = [];
+      let labelItems = [];
+
+      function clearLabels() {
+        labelsLayer.innerHTML = '';
+        labelItems = [];
+      }
+
+      function addLabel(text, vec3) {
+        const el = document.createElement('div');
+        el.className = 'label-3d';
+        el.textContent = text;
+        labelsLayer.appendChild(el);
+        labelItems.push({ el, pos: vec3.clone() });
+      }
+
+      function updateLabels() {
+        const w = wrap.clientWidth;
+        const h = wrap.clientHeight;
+        labelItems.forEach(({ el, pos }) => {
+          const p = pos.clone().project(camera);
+          if (p.z > 1) {
+            el.style.display = 'none';
+            return;
+          }
+          el.style.display = 'block';
+          el.style.left = `${(p.x * 0.5 + 0.5) * w}px`;
+          el.style.top = `${(-p.y * 0.5 + 0.5) * h}px`;
+        });
+      }
 
       function wavelengthToHex(nm) {
         let r = 0, g = 0, b = 0;
@@ -152,8 +215,8 @@
 
       window.setCam = (x, y, z) => {
         camera.position.set(x, y, z);
-        if (controls) { controls.target.set(0, 0, 0); controls.update(); }
-        else { camera.lookAt(0, 0, 0); }
+        if (controls) { controls.target.set(0.5, 0, 0); controls.update(); }
+        else { camera.lookAt(0.5, 0, 0); }
       };
 
       function clearScene() {
@@ -161,392 +224,96 @@
         modeGroup = new THREE.Group();
         scene.add(modeGroup);
         animHooks = [];
+        clearLabels();
       }
 
       function buildInterference() {
         clearScene();
         const color = wavelengthToHex(state.lambda);
-        const barrierMat = new THREE.MeshStandardMaterial({ color: 0x334155 });
         const d = state.slitDist;
 
-        const topWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.6, 1.4), barrierMat);
-        topWall.position.set(-2, 0, -(d / 2 + 0.85));
-        const botWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.6, 1.4), barrierMat);
-        botWall.position.set(-2, 0, (d / 2 + 0.85));
-        const midWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.6, Math.max(0.15, d - 0.25)), barrierMat);
-        midWall.position.set(-2, 0, 0);
+        // Корпус лазера и конусный когерентный пучок
+        const laserBody = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.28, 0.28, 1.3, 24),
+          new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.5, roughness: 0.4 })
+        );
+        laserBody.rotation.z = Math.PI / 2;
+        laserBody.position.set(-4.3, -0.4, 0);
+        modeGroup.add(laserBody);
+
+        const beamCone = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.12, 1.15, 2.5, 24, 1, true),
+          new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false })
+        );
+        beamCone.rotation.z = Math.PI / 2;
+        beamCone.position.set(-2.45, -0.4, 0);
+        modeGroup.add(beamCone);
+
+        // Оптическая скамья и экран с двумя щелями S1 и S2
+        const bench = new THREE.Mesh(
+          new THREE.BoxGeometry(8.6, 0.14, 0.7),
+          new THREE.MeshStandardMaterial({ color: 0x111827 })
+        );
+        bench.position.set(-0.2, -2.05, 0);
+        modeGroup.add(bench);
+
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 });
+        const topWall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 3.2, 1.4), wallMat);
+        topWall.position.set(-1.2, -0.4, -(d / 2 + 0.85));
+        const botWall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 3.2, 1.4), wallMat);
+        botWall.position.set(-1.2, -0.4, (d / 2 + 0.85));
+        const midWall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 3.2, Math.max(0.14, d - 0.22)), wallMat);
+        midWall.position.set(-1.2, -0.4, 0);
         modeGroup.add(topWall, botWall, midWall);
 
-        const laser = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.25, 0.25, 3.2, 16),
-          new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.55 })
-        );
-        laser.rotation.z = Math.PI / 2;
-        laser.position.set(-3.6, 0, 0);
-        modeGroup.add(laser);
-
+        // Расходящиеся волновые фронты от двух щелей
         const rings = [];
-        for (let s of [-d / 2, d / 2]) {
-          for (let i = 0; i < 6; i++) {
+        for (const s of [-d / 2, d / 2]) {
+          for (let i = 0; i < 8; i++) {
             const ring = new THREE.Mesh(
-              new THREE.RingGeometry(0.1, 0.16, 48, 1, -Math.PI / 2.2, Math.PI / 1.1),
-              new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
+              new THREE.RingGeometry(0.08, 0.14, 48, 1, -Math.PI / 2.2, Math.PI / 1.1),
+              new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.65, depthWrite: false })
             );
             ring.rotation.x = -Math.PI / 2;
-            ring.position.set(-1.95, 0, s);
+            ring.position.set(-1.12, -0.4, s);
             modeGroup.add(ring);
-            rings.push({ mesh: ring, offset: i / 6 });
+            rings.push({ mesh: ring, offset: i / 8 });
           }
         }
 
+        // Экран с интерференционными полосами
         const canvasTex = document.createElement('canvas');
-        canvasTex.width = 256; canvasTex.height = 64;
+        canvasTex.width = 256; canvasTex.height = 128;
         const ctx = canvasTex.getContext('2d');
         const hexStr = '#' + color.toString(16).padStart(6, '0');
+        ctx.fillStyle = '#070b14';
+        ctx.fillRect(0, 0, 256, 128);
         for (let x = 0; x < 256; x++) {
-          const u = (x - 128) / 24;
-          const intensity = Math.pow(Math.cos(u * d * (550 / state.lambda) * 2.2), 2);
-          ctx.fillStyle = '#090d16';
-          ctx.fillRect(x, 0, 1, 64);
-          ctx.globalAlpha = intensity;
+          const u = (x - 128) / 22;
+          const intensity = Math.pow(Math.cos(u * d * (532 / state.lambda) * 2.1), 2);
+          ctx.globalAlpha = intensity * 0.95;
           ctx.fillStyle = hexStr;
-          ctx.fillRect(x, 0, 1, 64);
-          ctx.globalAlpha = 1;
+          ctx.fillRect(x, 12, 1, 104);
         }
+        ctx.globalAlpha = 1;
+
         const screen = new THREE.Mesh(
-          new THREE.BoxGeometry(0.15, 3.6, 4.4),
+          new THREE.BoxGeometry(0.14, 3.3, 4.6),
           new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvasTex) })
         );
-        screen.position.set(3.2, 0, 0);
+        screen.position.set(3.4, -0.4, 0);
         modeGroup.add(screen);
 
+        addLabel('Лазер (когерентный свет)', new THREE.Vector3(-4.2, 0.65, 0));
+        addLabel('Две щели S₁ и S₂', new THREE.Vector3(-1.2, 1.55, 0));
+        addLabel('Экран (интерференционные полосы)', new THREE.Vector3(3.4, 1.6, 0));
+
         animHooks.push((t) => {
-          const speed = 0.45 * (550 / state.lambda);
+          const speed = 0.42 * (532 / state.lambda);
           rings.forEach(r => {
             const p = (t * speed + r.offset) % 1;
-            const scale = 0.2 + p * 5.0;
+            const scale = 0.25 + p * 5.2;
             r.mesh.scale.set(scale, scale, 1);
-            r.mesh.material.opacity = (1 - p) * 0.75;
+            r.mesh.material.opacity = (1 - p) * 0.72;
           });
         });
-
-        panel.innerHTML = `
-          <h2>1. Интерференция (опыт Юнга)</h2>
-          <div>Когерентные волны от двух щелей складываются и образуют устойчивые максимумы и минимумы освещённости.</div>
-          <div class="control">
-            <label><span>Длина волны λ</span><b>${state.lambda} нм</b></label>
-            <input type="range" min="400" max="700" value="${state.lambda}" oninput="updateParam('lambda', +this.value)">
-          </div>
-          <div class="control">
-            <label><span>Расстояние между щелями d</span><b>${state.slitDist.toFixed(1)} мм</b></label>
-            <input type="range" min="0.6" max="2.0" step="0.1" value="${state.slitDist}" oninput="updateParam('slitDist', +this.value)">
-          </div>
-          <div class="formula">Δx = λ · L / d</div>
-          <div class="conclusion"><b>Вывод:</b> Чередование светлых и тёмных полос доказывает, что свет обладает <b>волновой природой</b>.</div>
-        `;
-      }
-
-      function buildDiffraction() {
-        clearScene();
-        const color = wavelengthToHex(state.lambda);
-        const grating = new THREE.Mesh(
-          new THREE.BoxGeometry(0.12, 3.4, 3.4),
-          new THREE.MeshStandardMaterial({ color: 0x475569, transparent: true, opacity: 0.75 })
-        );
-        grating.position.set(-2.2, 0, 0);
-        modeGroup.add(grating);
-
-        const screen = new THREE.Mesh(
-          new THREE.BoxGeometry(0.15, 3.6, 5.2),
-          new THREE.MeshStandardMaterial({ color: 0x1e293b })
-        );
-        screen.position.set(3.2, 0, 0);
-        modeGroup.add(screen);
-
-        const inBeam = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.08, 0.08, 3.0, 12),
-          new THREE.MeshBasicMaterial({ color })
-        );
-        inBeam.rotation.z = Math.PI / 2;
-        inBeam.position.set(-3.7, 0, 0);
-        modeGroup.add(inBeam);
-
-        const scaleFactor = (state.lambda / 550) * (2.0 / state.gratingPeriod);
-        const x1 = 0.95 * scaleFactor;
-        [-2, -1, 0, 1, 2].forEach(k => {
-          const zPos = k * x1;
-          if (Math.abs(zPos) > 2.45) return;
-          const start = new THREE.Vector3(-2.2, 0, 0);
-          const end = new THREE.Vector3(3.12, 0, zPos);
-          const dir = new THREE.Vector3().subVectors(end, start);
-          const beam = new THREE.Mesh(
-            new THREE.CylinderGeometry(k === 0 ? 0.07 : 0.045, k === 0 ? 0.07 : 0.045, dir.length(), 12),
-            new THREE.MeshBasicMaterial({ color, transparent: true, opacity: k === 0 ? 0.95 : 0.65 })
-          );
-          beam.position.copy(start).add(end).multiplyScalar(0.5);
-          beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
-          modeGroup.add(beam);
-
-          const spot = new THREE.Mesh(
-            new THREE.SphereGeometry(k === 0 ? 0.16 : 0.12, 16, 16),
-            new THREE.MeshBasicMaterial({ color })
-          );
-          spot.position.copy(end);
-          modeGroup.add(spot);
-        });
-
-        panel.innerHTML = `
-          <h2>2. Дифракционная решётка</h2>
-          <div>Свет огибает препятствия и раскладывается в спектр максимумов порядков k = 0, ±1, ±2.</div>
-          <div class="control">
-            <label><span>Длина волны λ</span><b>${state.lambda} нм</b></label>
-            <input type="range" min="400" max="700" value="${state.lambda}" oninput="updateParam('lambda', +this.value)">
-          </div>
-          <div class="control">
-            <label><span>Период решётки d</span><b>${state.gratingPeriod.toFixed(1)} мкм</b></label>
-            <input type="range" min="1.2" max="3.0" step="0.2" value="${state.gratingPeriod}" oninput="updateParam('gratingPeriod', +this.value)">
-          </div>
-          <div class="formula">d · sin φ = k · λ  ⇒  λ ≈ (d · x₁) / L</div>
-          <div class="conclusion"><b>Вывод:</b> Измеренная длина волны (400–700 нм) соответствует диапазону электромагнитных волн.</div>
-        `;
-      }
-
-      function createSineWaveMesh(xStart, xEnd, segments, color, planeAngle) {
-        const pts = [];
-        for (let i = 0; i <= segments; i++) {
-          const x = xStart + ((xEnd - xStart) * i) / segments;
-          pts.push(new THREE.Vector3(x, 0, 0));
-        }
-        const geom = new THREE.BufferGeometry().setFromPoints(pts);
-        const mat = new THREE.LineBasicMaterial({ color });
-        const line = new THREE.Line(geom, mat);
-        return { line, geom, xStart, xEnd, segments, planeAngle };
-      }
-
-      function updateSineWave(waveObj, t, amp, kFreq) {
-        const pos = waveObj.geom.attributes.position;
-        const cosA = Math.cos(waveObj.planeAngle);
-        const sinA = Math.sin(waveObj.planeAngle);
-        for (let i = 0; i <= waveObj.segments; i++) {
-          const x = waveObj.xStart + ((waveObj.xEnd - waveObj.xStart) * i) / waveObj.segments;
-          const val = Math.sin(t * 4 - x * kFreq) * amp;
-          pos.setXYZ(i, x, val * cosA, val * sinA);
-        }
-        pos.needsUpdate = true;
-      }
-
-      function buildPolarization() {
-        clearScene();
-        const rad = (state.analyzerAngle * Math.PI) / 180;
-        const cosVal = Math.cos(rad);
-        const intensity = cosVal * cosVal;
-
-        const axis = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.018, 0.018, 8.8, 8),
-          new THREE.MeshBasicMaterial({ color: 0x334155 })
-        );
-        axis.rotation.z = Math.PI / 2;
-        modeGroup.add(axis);
-
-        const pol = new THREE.Mesh(
-          new THREE.CylinderGeometry(1.4, 1.4, 0.1, 32),
-          new THREE.MeshStandardMaterial({ color: 0x0284c7, transparent: true, opacity: 0.35 })
-        );
-        pol.rotation.z = Math.PI / 2;
-        pol.position.set(-1.5, 0, 0);
-        modeGroup.add(pol);
-
-        const polAxis = new THREE.Mesh(
-          new THREE.BoxGeometry(0.12, 2.5, 0.06),
-          new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
-        );
-        polAxis.position.set(-1.5, 0, 0);
-        modeGroup.add(polAxis);
-
-        const ana = new THREE.Mesh(
-          new THREE.CylinderGeometry(1.4, 1.4, 0.1, 32),
-          new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.35 })
-        );
-        ana.rotation.z = Math.PI / 2;
-        ana.position.set(1.5, 0, 0);
-        modeGroup.add(ana);
-
-        const axisLine = new THREE.Mesh(
-          new THREE.BoxGeometry(0.14, 2.5, 0.06),
-          new THREE.MeshBasicMaterial({ color: 0xfacc15 })
-        );
-        axisLine.position.set(1.5, 0, 0);
-        axisLine.rotation.x = rad;
-        modeGroup.add(axisLine);
-
-        // Волны до поляризатора (две ортогональные составляющие неполяризованного света)
-        const unpolA = createSineWaveMesh(-4.3, -1.5, 70, 0xf43f5e, 0);
-        const unpolB = createSineWaveMesh(-4.3, -1.5, 70, 0xfb923c, Math.PI / 2);
-        // Плоская волна после поляризатора (вдоль оси Y)
-        const midWave = createSineWaveMesh(-1.5, 1.5, 70, 0x38bdf8, 0);
-        // Волна после анализатора (поворот на угол α и амплитуда |cos α|)
-        const outWave = createSineWaveMesh(1.5, 4.3, 70, 0xfacc15, rad);
-        modeGroup.add(unpolA.line, unpolB.line, midWave.line, outWave.line);
-
-        const screen = new THREE.Mesh(
-          new THREE.CircleGeometry(1.25, 32),
-          new THREE.MeshBasicMaterial({ color: new THREE.Color(intensity, intensity * 0.95, intensity * 0.6) })
-        );
-        screen.rotation.y = -Math.PI / 2;
-        screen.position.set(4.35, 0, 0);
-        modeGroup.add(screen);
-
-        animHooks.push((t) => {
-          const kFreq = 2.4;
-          const ampIn = 0.85;
-          const ampOut = ampIn * Math.abs(cosVal);
-
-          const posA = unpolA.geom.attributes.position;
-          const posB = unpolB.geom.attributes.position;
-          for (let i = 0; i <= unpolA.segments; i++) {
-            const x = unpolA.xStart + ((unpolA.xEnd - unpolA.xStart) * i) / unpolA.segments;
-            const yVal = Math.sin(t * 4 - x * kFreq + 0.4) * ampIn;
-            const zVal = Math.sin(t * 4 - x * kFreq - 0.7) * ampIn;
-            posA.setXYZ(i, x, yVal, 0);
-            posB.setXYZ(i, x, 0, zVal);
-          }
-          posA.needsUpdate = true;
-          posB.needsUpdate = true;
-
-          updateSineWave(midWave, t, ampIn, kFreq);
-          updateSineWave(outWave, t, ampOut, kFreq);
-        });
-
-        panel.innerHTML = `
-          <h2>3. Поляризация света</h2>
-          <div>Синусоиды показывают колебания вектора напряжённости <b>E</b>: после поляризатора волна становится плоской, а анализатор пропускает составляющую вдоль угла α.</div>
-          <div class="control">
-            <label><span>Угол анализатора α</span><b>${state.analyzerAngle}° (I = ${(intensity * 100).toFixed(0)}%)</b></label>
-            <input type="range" min="0" max="180" value="${state.analyzerAngle}" oninput="updateParam('analyzerAngle', +this.value)">
-          </div>
-          <div class="formula">Закон Малюса: I = I₀ · cos²(${state.analyzerAngle}°)</div>
-          <div class="conclusion"><b>Вывод:</b> Гашение волны при α = 90° доказывает <b>поперечность</b> световой волны.</div>
-        `;
-      }
-
-      function buildEMWave() {
-        clearScene();
-        const axis = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.025, 0.025, 9.6, 8),
-          new THREE.MeshBasicMaterial({ color: 0x94a3b8 })
-        );
-        axis.rotation.z = Math.PI / 2;
-        modeGroup.add(axis);
-
-        const segs = 140;
-        const ePts = [], bPts = [];
-        for (let i = 0; i <= segs; i++) {
-          const x = -4.6 + (9.2 * i) / segs;
-          ePts.push(new THREE.Vector3(x, 0, 0));
-          bPts.push(new THREE.Vector3(x, 0, 0));
-        }
-        const eGeom = new THREE.BufferGeometry().setFromPoints(ePts);
-        const bGeom = new THREE.BufferGeometry().setFromPoints(bPts);
-        const eCurve = new THREE.Line(eGeom, new THREE.LineBasicMaterial({ color: 0xf43f5e }));
-        const bCurve = new THREE.Line(bGeom, new THREE.LineBasicMaterial({ color: 0x38bdf8 }));
-        modeGroup.add(eCurve, bCurve);
-
-        const count = 24;
-        const eBars = [], bBars = [];
-        for (let i = 0; i < count; i++) {
-          const x = -4.5 + (i / (count - 1)) * 9;
-          const eBar = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.022, 0.022, 1, 8),
-            new THREE.MeshBasicMaterial({ color: 0xf43f5e })
-          );
-          const bBar = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.022, 0.022, 1, 8),
-            new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
-          );
-          bBar.rotation.x = Math.PI / 2;
-          modeGroup.add(eBar, bBar);
-          eBars.push({ mesh: eBar, x });
-          bBars.push({ mesh: bBar, x });
-        }
-
-        animHooks.push((t) => {
-          const k = (550 / state.lambda) * 1.4;
-          const amp = 1.5;
-
-          const ePos = eGeom.attributes.position;
-          const bPos = bGeom.attributes.position;
-          for (let i = 0; i <= segs; i++) {
-            const x = -4.6 + (9.2 * i) / segs;
-            const val = Math.sin(t * 3.5 - x * k) * amp;
-            ePos.setXYZ(i, x, val, 0);
-            bPos.setXYZ(i, x, 0, val);
-          }
-          ePos.needsUpdate = true;
-          bPos.needsUpdate = true;
-
-          eBars.forEach((item, idx) => {
-            const val = Math.sin(t * 3.5 - item.x * k) * amp;
-            item.mesh.scale.y = Math.max(0.02, Math.abs(val));
-            item.mesh.position.set(item.x, val / 2, 0);
-
-            bBars[idx].mesh.scale.y = Math.max(0.02, Math.abs(val));
-            bBars[idx].mesh.position.set(bBars[idx].x, 0, val / 2);
-          });
-        });
-
-        panel.innerHTML = `
-          <h2>4. Электромагнитная волна</h2>
-          <div>Векторы <b>E</b> (красная волна) и <b>B</b> (синяя волна) колеблются в фазе во взаимно перпендикулярных плоскостях, а волна распространяется вдоль оси X.</div>
-          <div class="control">
-            <label><span>Длина волны λ</span><b>${state.lambda} нм</b></label>
-            <input type="range" min="400" max="700" value="${state.lambda}" oninput="updateParam('lambda', +this.value)">
-          </div>
-          <div class="formula">E ⊥ B ⊥ c,   c ≈ 3 · 10⁸ м/с</div>
-          <div class="conclusion"><b>Итог (11.6.1.3):</b> Интерференция + дифракция (волна) + поляризация (поперечность) = свет есть электромагнитная волна.</div>
-        `;
-      }
-
-      window.updateParam = (key, val) => {
-        state[key] = val;
-        renderMode();
-      };
-
-      function renderMode() {
-        if (mode === 'interference') buildInterference();
-        else if (mode === 'diffraction') buildDiffraction();
-        else if (mode === 'polarization') buildPolarization();
-        else buildEMWave();
-      }
-
-      document.querySelectorAll('.tab').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          mode = btn.dataset.mode;
-          renderMode();
-        });
-      });
-
-      renderMode();
-
-      const clock = new THREE.Clock();
-      function animate() {
-        requestAnimationFrame(animate);
-        const t = clock.getElapsedTime();
-        animHooks.forEach(fn => fn(t));
-        if (controls) controls.update();
-        renderer.render(scene, camera);
-      }
-      animate();
-
-      window.addEventListener('resize', () => {
-        camera.aspect = Math.max(1, wrap.clientWidth) / Math.max(1, wrap.clientHeight);
-        camera.updateProjectionMatrix();
-        renderer.setSize(wrap.clientWidth, wrap.clientHeight);
-      });
-    }
-
-    initThree();
-  </script>
-</body>
-</html>
