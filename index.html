@@ -44,6 +44,10 @@
       color: #e2e8f0; font-size: 12px; cursor: pointer;
     }
     .cam-btn:hover { background: #334155; }
+    .err-box {
+      max-width: 520px; margin: 40px auto; padding: 18px; border-radius: 12px;
+      background: #1e1b2e; border: 1px solid #f43f5e; color: #ffe4e6; font-size: 14px; line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -58,7 +62,7 @@
   </header>
 
   <div id="canvas-wrap">
-    <div class="panel" id="info-panel"></div>
+    <div class="panel" id="info-panel">Загрузка 3D-модели...</div>
     <div class="camera-bar">
       <button class="cam-btn" onclick="setCam(7, 4.5, 9)">3D-перспектива</button>
       <button class="cam-btn" onclick="setCam(0, 1.2, 11)">Вид сбоку</button>
@@ -67,182 +71,420 @@
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script>
-    const wrap = document.getElementById('canvas-wrap');
-    const panel = document.getElementById('info-panel');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x090d16);
-
-    const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
-    camera.position.set(7, 4.5, 9);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    wrap.appendChild(renderer.domElement);
-
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.65));
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-    dirLight.position.set(5, 10, 7);
-    scene.add(dirLight);
-
-    const grid = new THREE.GridHelper(16, 16, 0x1e293b, 0x111827);
-    grid.position.y = -2.2;
-    scene.add(grid);
-
-    let mode = 'interference';
-    let state = { lambda: 550, slitDist: 1.2, analyzerAngle: 45, gratingPeriod: 2.0 };
-    let modeGroup = new THREE.Group();
-    scene.add(modeGroup);
-    let animHooks = [];
-
-    function wavelengthToHex(nm) {
-      let r = 0, g = 0, b = 0;
-      if (nm >= 380 && nm < 440) { r = -(nm - 440) / 60; b = 1; }
-      else if (nm < 490) { g = (nm - 440) / 50; b = 1; }
-      else if (nm < 510) { g = 1; b = -(nm - 510) / 20; }
-      else if (nm < 580) { r = (nm - 510) / 70; g = 1; }
-      else if (nm < 645) { r = 1; g = -(nm - 645) / 65; }
-      else if (nm <= 750) { r = 1; }
-      return (Math.round(r * 255) << 16) + (Math.round(g * 255) << 8) + Math.round(b * 255);
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
     }
 
-    window.setCam = (x, y, z) => {
-      camera.position.set(x, y, z);
-      controls.target.set(0, 0, 0);
-      controls.update();
-    };
+    async function initThree() {
+      const threeUrls = [
+        'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+        'https://unpkg.com/three@0.128.0/build/three.min.js'
+      ];
+      const controlsUrls = [
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js',
+        'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js'
+      ];
 
-    function clearScene() {
-      scene.remove(modeGroup);
-      modeGroup = new THREE.Group();
+      let loadedThree = false;
+      for (const u of threeUrls) {
+        try { await loadScript(u); if (window.THREE) { loadedThree = true; break; } } catch (_) {}
+      }
+      if (!loadedThree) {
+        document.getElementById('canvas-wrap').innerHTML =
+          '<div class="err-box"><b>Не удалось загрузить библиотеку Three.js.</b><br>Проверьте подключение к интернету, отключите блокировщик рекламы или проверьте, не блокирует ли сеть внешние скрипты (cdnjs / unpkg).</div>';
+        return;
+      }
+      for (const u of controlsUrls) {
+        try { await loadScript(u); if (window.THREE && THREE.OrbitControls) break; } catch (_) {}
+      }
+      startLab();
+    }
+
+    function startLab() {
+      const wrap = document.getElementById('canvas-wrap');
+      const panel = document.getElementById('info-panel');
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x090d16);
+
+      const camera = new THREE.PerspectiveCamera(45, Math.max(1, wrap.clientWidth) / Math.max(1, wrap.clientHeight), 0.1, 100);
+      camera.position.set(7, 4.5, 9);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      wrap.appendChild(renderer.domElement);
+
+      const controls = THREE.OrbitControls ? new THREE.OrbitControls(camera, renderer.domElement) : null;
+      if (controls) controls.enableDamping = true;
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+      dirLight.position.set(5, 10, 7);
+      scene.add(dirLight);
+
+      const grid = new THREE.GridHelper(16, 16, 0x1e293b, 0x111827);
+      grid.position.y = -2.2;
+      scene.add(grid);
+
+      let mode = 'interference';
+      let state = { lambda: 550, slitDist: 1.2, analyzerAngle: 45, gratingPeriod: 2.0 };
+      let modeGroup = new THREE.Group();
       scene.add(modeGroup);
-      animHooks = [];
-    }
+      let animHooks = [];
 
-    function buildInterference() {
-      clearScene();
-      const color = wavelengthToHex(state.lambda);
-      const barrierMat = new THREE.MeshStandardMaterial({ color: 0x334155 });
-      const d = state.slitDist;
+      function wavelengthToHex(nm) {
+        let r = 0, g = 0, b = 0;
+        if (nm >= 380 && nm < 440) { r = -(nm - 440) / 60; b = 1; }
+        else if (nm < 490) { g = (nm - 440) / 50; b = 1; }
+        else if (nm < 510) { g = 1; b = -(nm - 510) / 20; }
+        else if (nm < 580) { r = (nm - 510) / 70; g = 1; }
+        else if (nm < 645) { r = 1; g = -(nm - 645) / 65; }
+        else if (nm <= 750) { r = 1; }
+        return (Math.round(r * 255) << 16) + (Math.round(g * 255) << 8) + Math.round(b * 255);
+      }
 
-      // Преграда с двумя щелями
-      const topWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.6, 1.4), barrierMat);
-      topWall.position.set(-2, 0, -(d / 2 + 0.85));
-      const botWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.6, 1.4), barrierMat);
-      botWall.position.set(-2, 0, (d / 2 + 0.85));
-      const midWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.6, Math.max(0.15, d - 0.25)), barrierMat);
-      midWall.position.set(-2, 0, 0);
-      modeGroup.add(topWall, botWall, midWall);
+      window.setCam = (x, y, z) => {
+        camera.position.set(x, y, z);
+        if (controls) { controls.target.set(0, 0, 0); controls.update(); }
+        else { camera.lookAt(0, 0, 0); }
+      };
 
-      // Падающий пучок
-      const laser = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.25, 0.25, 3.2, 16),
-        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.55 })
-      );
-      laser.rotation.z = Math.PI / 2;
-      laser.position.set(-3.6, 0, 0);
-      modeGroup.add(laser);
+      function clearScene() {
+        scene.remove(modeGroup);
+        modeGroup = new THREE.Group();
+        scene.add(modeGroup);
+        animHooks = [];
+      }
 
-      // Когерентные сферические фронты от двух щелей
-      const rings = [];
-      for (let s of [-d / 2, d / 2]) {
-        for (let i = 0; i < 6; i++) {
-          const ring = new THREE.Mesh(
-            new THREE.RingGeometry(0.1, 0.16, 48, 1, -Math.PI / 2.2, Math.PI / 1.1),
-            new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
-          );
-          ring.rotation.x = -Math.PI / 2;
-          ring.position.set(-1.95, 0, s);
-          modeGroup.add(ring);
-          rings.push({ mesh: ring, offset: i / 6 });
+      function buildInterference() {
+        clearScene();
+        const color = wavelengthToHex(state.lambda);
+        const barrierMat = new THREE.MeshStandardMaterial({ color: 0x334155 });
+        const d = state.slitDist;
+
+        const topWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.6, 1.4), barrierMat);
+        topWall.position.set(-2, 0, -(d / 2 + 0.85));
+        const botWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.6, 1.4), barrierMat);
+        botWall.position.set(-2, 0, (d / 2 + 0.85));
+        const midWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.6, Math.max(0.15, d - 0.25)), barrierMat);
+        midWall.position.set(-2, 0, 0);
+        modeGroup.add(topWall, botWall, midWall);
+
+        const laser = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.25, 0.25, 3.2, 16),
+          new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.55 })
+        );
+        laser.rotation.z = Math.PI / 2;
+        laser.position.set(-3.6, 0, 0);
+        modeGroup.add(laser);
+
+        const rings = [];
+        for (let s of [-d / 2, d / 2]) {
+          for (let i = 0; i < 6; i++) {
+            const ring = new THREE.Mesh(
+              new THREE.RingGeometry(0.1, 0.16, 48, 1, -Math.PI / 2.2, Math.PI / 1.1),
+              new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
+            );
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.set(-1.95, 0, s);
+            modeGroup.add(ring);
+            rings.push({ mesh: ring, offset: i / 6 });
+          }
         }
+
+        const canvasTex = document.createElement('canvas');
+        canvasTex.width = 256; canvasTex.height = 64;
+        const ctx = canvasTex.getContext('2d');
+        const hexStr = '#' + color.toString(16).padStart(6, '0');
+        for (let x = 0; x < 256; x++) {
+          const u = (x - 128) / 24;
+          const intensity = Math.pow(Math.cos(u * d * (550 / state.lambda) * 2.2), 2);
+          ctx.fillStyle = '#090d16';
+          ctx.fillRect(x, 0, 1, 64);
+          ctx.globalAlpha = intensity;
+          ctx.fillStyle = hexStr;
+          ctx.fillRect(x, 0, 1, 64);
+          ctx.globalAlpha = 1;
+        }
+        const screen = new THREE.Mesh(
+          new THREE.BoxGeometry(0.15, 3.6, 4.4),
+          new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvasTex) })
+        );
+        screen.position.set(3.2, 0, 0);
+        modeGroup.add(screen);
+
+        animHooks.push((t) => {
+          const speed = 0.45 * (550 / state.lambda);
+          rings.forEach(r => {
+            const p = (t * speed + r.offset) % 1;
+            const scale = 0.2 + p * 5.0;
+            r.mesh.scale.set(scale, scale, 1);
+            r.mesh.material.opacity = (1 - p) * 0.75;
+          });
+        });
+
+        panel.innerHTML = `
+          <h2>1. Интерференция (опыт Юнга)</h2>
+          <div>Когерентные волны от двух щелей складываются и образуют устойчивые максимумы и минимумы освещённости.</div>
+          <div class="control">
+            <label><span>Длина волны λ</span><b>${state.lambda} нм</b></label>
+            <input type="range" min="400" max="700" value="${state.lambda}" oninput="updateParam('lambda', +this.value)">
+          </div>
+          <div class="control">
+            <label><span>Расстояние между щелями d</span><b>${state.slitDist.toFixed(1)} мм</b></label>
+            <input type="range" min="0.6" max="2.0" step="0.1" value="${state.slitDist}" oninput="updateParam('slitDist', +this.value)">
+          </div>
+          <div class="formula">Δx = λ · L / d</div>
+          <div class="conclusion"><b>Вывод:</b> Чередование светлых и тёмных полос доказывает, что свет обладает <b>волновой природой</b>.</div>
+        `;
       }
 
-      // Экран с интерференционными полосами
-      const canvasTex = document.createElement('canvas');
-      canvasTex.width = 256; canvasTex.height = 64;
-      const ctx = canvasTex.getContext('2d');
-      const hexStr = '#' + color.toString(16).padStart(6, '0');
-      for (let x = 0; x < 256; x++) {
-        const u = (x - 128) / 24;
-        const intensity = Math.pow(Math.cos(u * d * (550 / state.lambda) * 2.2), 2);
-        ctx.fillStyle = '#090d16';
-        ctx.fillRect(x, 0, 1, 64);
-        ctx.globalAlpha = intensity;
-        ctx.fillStyle = hexStr;
-        ctx.fillRect(x, 0, 1, 64);
-        ctx.globalAlpha = 1;
-      }
-      const screen = new THREE.Mesh(
-        new THREE.BoxGeometry(0.15, 3.6, 4.4),
-        new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvasTex) })
-      );
-      screen.position.set(3.2, 0, 0);
-      modeGroup.add(screen);
+      function buildDiffraction() {
+        clearScene();
+        const color = wavelengthToHex(state.lambda);
+        const grating = new THREE.Mesh(
+          new THREE.BoxGeometry(0.12, 3.4, 3.4),
+          new THREE.MeshStandardMaterial({ color: 0x475569, transparent: true, opacity: 0.75 })
+        );
+        grating.position.set(-2.2, 0, 0);
+        modeGroup.add(grating);
 
-      animHooks.push((t) => {
-        const speed = 0.45 * (550 / state.lambda);
-        rings.forEach(r => {
-          const p = (t * speed + r.offset) % 1;
-          const scale = 0.2 + p * 5.0;
-          r.mesh.scale.set(scale, scale, 1);
-          r.mesh.material.opacity = (1 - p) * 0.75;
+        const screen = new THREE.Mesh(
+          new THREE.BoxGeometry(0.15, 3.6, 5.2),
+          new THREE.MeshStandardMaterial({ color: 0x1e293b })
+        );
+        screen.position.set(3.2, 0, 0);
+        modeGroup.add(screen);
+
+        const inBeam = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.08, 0.08, 3.0, 12),
+          new THREE.MeshBasicMaterial({ color })
+        );
+        inBeam.rotation.z = Math.PI / 2;
+        inBeam.position.set(-3.7, 0, 0);
+        modeGroup.add(inBeam);
+
+        const scaleFactor = (state.lambda / 550) * (2.0 / state.gratingPeriod);
+        const x1 = 0.95 * scaleFactor;
+        [-2, -1, 0, 1, 2].forEach(k => {
+          const zPos = k * x1;
+          if (Math.abs(zPos) > 2.45) return;
+          const start = new THREE.Vector3(-2.2, 0, 0);
+          const end = new THREE.Vector3(3.12, 0, zPos);
+          const dir = new THREE.Vector3().subVectors(end, start);
+          const beam = new THREE.Mesh(
+            new THREE.CylinderGeometry(k === 0 ? 0.07 : 0.045, k === 0 ? 0.07 : 0.045, dir.length(), 12),
+            new THREE.MeshBasicMaterial({ color, transparent: true, opacity: k === 0 ? 0.95 : 0.65 })
+          );
+          beam.position.copy(start).add(end).multiplyScalar(0.5);
+          beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+          modeGroup.add(beam);
+
+          const spot = new THREE.Mesh(
+            new THREE.SphereGeometry(k === 0 ? 0.16 : 0.12, 16, 16),
+            new THREE.MeshBasicMaterial({ color })
+          );
+          spot.position.copy(end);
+          modeGroup.add(spot);
+        });
+
+        panel.innerHTML = `
+          <h2>2. Дифракционная решётка</h2>
+          <div>Свет огибает препятствия и раскладывается в спектр максимумов порядков k = 0, ±1, ±2.</div>
+          <div class="control">
+            <label><span>Длина волны λ</span><b>${state.lambda} нм</b></label>
+            <input type="range" min="400" max="700" value="${state.lambda}" oninput="updateParam('lambda', +this.value)">
+          </div>
+          <div class="control">
+            <label><span>Период решётки d</span><b>${state.gratingPeriod.toFixed(1)} мкм</b></label>
+            <input type="range" min="1.2" max="3.0" step="0.2" value="${state.gratingPeriod}" oninput="updateParam('gratingPeriod', +this.value)">
+          </div>
+          <div class="formula">d · sin φ = k · λ  ⇒  λ ≈ (d · x₁) / L</div>
+          <div class="conclusion"><b>Вывод:</b> Измеренная длина волны (400–700 нм) соответствует диапазону электромагнитных волн.</div>
+        `;
+      }
+
+      function buildPolarization() {
+        clearScene();
+        const rad = (state.analyzerAngle * Math.PI) / 180;
+        const intensity = Math.pow(Math.cos(rad), 2);
+
+        const pol = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.4, 1.4, 0.12, 32),
+          new THREE.MeshStandardMaterial({ color: 0x0284c7, transparent: true, opacity: 0.45 })
+        );
+        pol.rotation.z = Math.PI / 2;
+        pol.position.set(-1.5, 0, 0);
+        modeGroup.add(pol);
+
+        const ana = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.4, 1.4, 0.12, 32),
+          new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.45 })
+        );
+        ana.rotation.z = Math.PI / 2;
+        ana.position.set(1.5, 0, 0);
+        modeGroup.add(ana);
+
+        const axisLine = new THREE.Mesh(
+          new THREE.BoxGeometry(0.16, 2.6, 0.08),
+          new THREE.MeshBasicMaterial({ color: 0xfacc15 })
+        );
+        axisLine.position.set(1.5, 0, 0);
+        axisLine.rotation.x = rad;
+        modeGroup.add(axisLine);
+
+        const arrows = [];
+        for (let i = 0; i < 18; i++) {
+          const x = -4.2 + i * 0.48;
+          let angle = 0;
+          let amp = 0.9;
+          if (x < -1.5) {
+            angle = (i * 1.1) % Math.PI;
+          } else if (x < 1.5) {
+            angle = 0;
+          } else {
+            angle = rad;
+            amp = 0.9 * Math.cos(rad);
+          }
+          const bar = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.03, 0.03, 1, 8),
+            new THREE.MeshBasicMaterial({ color: x > 1.5 ? 0x38bdf8 : 0xf43f5e })
+          );
+          bar.position.set(x, 0, 0);
+          bar.rotation.x = angle;
+          modeGroup.add(bar);
+          arrows.push({ bar, x, amp });
+        }
+
+        const screen = new THREE.Mesh(
+          new THREE.CircleGeometry(1.3, 32),
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(intensity, intensity * 0.95, intensity * 0.7) })
+        );
+        screen.rotation.y = -Math.PI / 2;
+        screen.position.set(4.3, 0, 0);
+        modeGroup.add(screen);
+
+        animHooks.push((t) => {
+          arrows.forEach(a => {
+            const wave = Math.sin(t * 4 - a.x * 2.2) * a.amp;
+            a.bar.scale.y = Math.max(0.02, Math.abs(wave) * 1.6);
+          });
+        });
+
+        panel.innerHTML = `
+          <h2>3. Поляризация света</h2>
+          <div>При повороте анализатора на 90° свет полностью гасится. Продольные волны так себя не ведут.</div>
+          <div class="control">
+            <label><span>Угол анализатора α</span><b>${state.analyzerAngle}° (I = ${(intensity * 100).toFixed(0)}%)</b></label>
+            <input type="range" min="0" max="180" value="${state.analyzerAngle}" oninput="updateParam('analyzerAngle', +this.value)">
+          </div>
+          <div class="formula">Закон Малюса: I = I₀ · cos²(${state.analyzerAngle}°)</div>
+          <div class="conclusion"><b>Вывод:</b> Гашение света доказывает <b>поперечность</b> световой волны — ключевой признак электромагнитной волны.</div>
+        `;
+      }
+
+      function buildEMWave() {
+        clearScene();
+        const count = 42;
+        const eBars = [], bBars = [];
+        const axis = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.025, 0.025, 9.5, 8),
+          new THREE.MeshBasicMaterial({ color: 0x94a3b8 })
+        );
+        axis.rotation.z = Math.PI / 2;
+        modeGroup.add(axis);
+
+        for (let i = 0; i < count; i++) {
+          const x = -4.5 + (i / (count - 1)) * 9;
+          const eBar = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.03, 0.03, 1, 8),
+            new THREE.MeshBasicMaterial({ color: 0xf43f5e })
+          );
+          eBar.position.set(x, 0, 0);
+          const bBar = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.03, 0.03, 1, 8),
+            new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+          );
+          bBar.rotation.x = Math.PI / 2;
+          bBar.position.set(x, 0, 0);
+          modeGroup.add(eBar, bBar);
+          eBars.push({ mesh: eBar, x });
+          bBars.push({ mesh: bBar, x });
+        }
+
+        animHooks.push((t) => {
+          const k = (550 / state.lambda) * 1.4;
+          eBars.forEach((item, idx) => {
+            const val = Math.sin(t * 3.5 - item.x * k) * 1.5;
+            item.mesh.scale.y = Math.max(0.02, Math.abs(val));
+            item.mesh.position.y = val / 2;
+
+            const bVal = val;
+            bBars[idx].mesh.scale.y = Math.max(0.02, Math.abs(bVal));
+            bBars[idx].mesh.position.z = bVal / 2;
+          });
+        });
+
+        panel.innerHTML = `
+          <h2>4. Электромагнитная волна</h2>
+          <div>Векторы напряжённости <b>E</b> (красный) и магнитной индукции <b>B</b> (синий) колеблются взаимно перпендикулярно и перпендикулярно лучу.</div>
+          <div class="control">
+            <label><span>Длина волны λ</span><b>${state.lambda} нм</b></label>
+            <input type="range" min="400" max="700" value="${state.lambda}" oninput="updateParam('lambda', +this.value)">
+          </div>
+          <div class="formula">E ⊥ B ⊥ c,   c ≈ 3 · 10⁸ м/с</div>
+          <div class="conclusion"><b>Итог (11.6.1.3):</b> Интерференция + дифракция (волна) + поляризация (поперечность) = свет есть электромагнитная волна.</div>
+        `;
+      }
+
+      window.updateParam = (key, val) => {
+        state[key] = val;
+        renderMode();
+      };
+
+      function renderMode() {
+        if (mode === 'interference') buildInterference();
+        else if (mode === 'diffraction') buildDiffraction();
+        else if (mode === 'polarization') buildPolarization();
+        else buildEMWave();
+      }
+
+      document.querySelectorAll('.tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          mode = btn.dataset.mode;
+          renderMode();
         });
       });
 
-      panel.innerHTML = `
-        <h2>1. Интерференция (опыт Юнга)</h2>
-        <div>Когерентные волны от двух щелей складываются и образуют устойчивые максимумы и минимумы освещённости.</div>
-        <div class="control">
-          <label><span>Длина волны λ</span><b>${state.lambda} нм</b></label>
-          <input type="range" min="400" max="700" value="${state.lambda}" oninput="updateParam('lambda', +this.value)">
-        </div>
-        <div class="control">
-          <label><span>Расстояние между щелями d</span><b>${state.slitDist.toFixed(1)} мм</b></label>
-          <input type="range" min="0.6" max="2.0" step="0.1" value="${state.slitDist}" oninput="updateParam('slitDist', +this.value)">
-        </div>
-        <div class="formula">Δx = λ · L / d</div>
-        <div class="conclusion"><b>Вывод:</b> Чередование светлых и тёмных полос доказывает, что свет обладает <b>волновой природой</b>.</div>
-      `;
+      renderMode();
+
+      const clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        const t = clock.getElapsedTime();
+        animHooks.forEach(fn => fn(t));
+        if (controls) controls.update();
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = Math.max(1, wrap.clientWidth) / Math.max(1, wrap.clientHeight);
+        camera.updateProjectionMatrix();
+        renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+      });
     }
 
-    function buildDiffraction() {
-      clearScene();
-      const color = wavelengthToHex(state.lambda);
-      const grating = new THREE.Mesh(
-        new THREE.BoxGeometry(0.12, 3.4, 3.4),
-        new THREE.MeshStandardMaterial({ color: 0x475569, transparent: true, opacity: 0.75 })
-      );
-      grating.position.set(-2.2, 0, 0);
-      modeGroup.add(grating);
-
-      const screen = new THREE.Mesh(
-        new THREE.BoxGeometry(0.15, 3.6, 5.2),
-        new THREE.MeshStandardMaterial({ color: 0x1e293b })
-      );
-      screen.position.set(3.2, 0, 0);
-      modeGroup.add(screen);
-
-      // Падающий луч
-      const inBeam = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.08, 0.08, 3.0, 12),
-        new THREE.MeshBasicMaterial({ color })
-      );
-      inBeam.rotation.z = Math.PI / 2;
-      inBeam.position.set(-3.7, 0, 0);
-      modeGroup.add(inBeam);
-
-      // Дифракционные максимумы k = -2, -1, 0, +1, +2
-      const L = 5.4;
-      const scaleFactor = (state.lambda / 550) * (2.0 / state.gratingPeriod);
-      const x1 = 0.95 * scaleFactor;
-      [-2, -1, 0, 1, 2].forEach(k => {
-        const zPos = k * x1;
-        if (Math.abs(zPos) > 2.45) return;
-        const start = new THREE.Vector3(-2.
+    initThree();
+  </script>
+</body>
+</html>
