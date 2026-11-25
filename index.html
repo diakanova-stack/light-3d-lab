@@ -15,9 +15,9 @@
     }
     .title-card {
       pointer-events: auto;
-      background: rgba(10, 17, 32, 0.9); border: 1px solid #1e293b; border-radius: 14px;
+      background: rgba(10, 17, 32, 0.92); border: 1px solid #1e293b; border-radius: 14px;
       padding: 10px 16px; display: flex; flex-direction: column; justify-content: center; gap: 4px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
     .title-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94a3b8; }
     .co-badge {
@@ -28,9 +28,9 @@
 
     .tabs-card {
       pointer-events: auto;
-      background: rgba(10, 17, 32, 0.9); border: 1px solid #1e293b; border-radius: 14px;
+      background: rgba(10, 17, 32, 0.92); border: 1px solid #1e293b; border-radius: 14px;
       padding: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
     .tab-btn {
       padding: 10px 16px; border-radius: 10px; border: 1px solid transparent;
@@ -44,22 +44,21 @@
     }
 
     #stage-wrap { position: relative; flex: 1; width: 100%; overflow: hidden; }
-    canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
-    canvas:active { cursor: grabbing; }
+    canvas { display: block; width: 100%; height: 100%; }
 
     #labels-layer { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
     .scene-tag {
       position: absolute; transform: translate(-50%, -50%);
-      background: rgba(10, 17, 32, 0.9); border: 1px solid #475569; color: #f8fafc;
-      padding: 5px 11px; border-radius: 8px; font-size: 12px; font-weight: 600;
-      white-space: nowrap; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+      background: rgba(10, 17, 32, 0.92); border: 1px solid #475569; color: #f8fafc;
+      padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      white-space: nowrap; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
     }
 
     .side-panel {
-      position: absolute; top: 8px; left: 16px; width: 340px; max-width: calc(100vw - 32px);
-      background: rgba(10, 17, 32, 0.92); backdrop-filter: blur(10px);
+      position: absolute; top: 8px; left: 16px; width: 345px; max-width: calc(100vw - 32px);
+      background: rgba(10, 17, 32, 0.93); backdrop-filter: blur(10px);
       border: 1px solid #1e293b; border-radius: 16px; padding: 16px;
-      z-index: 6; box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
+      z-index: 6; box-shadow: 0 14px 36px rgba(0, 0, 0, 0.6);
     }
     .stage-kicker {
       font-size: 11px; font-weight: 700; letter-spacing: 0.7px;
@@ -70,7 +69,7 @@
     .side-desc code { color: #38bdf8; font-family: ui-monospace, SFMono-Regular, monospace; }
 
     .ctrl-box {
-      background: rgba(15, 23, 42, 0.85); border: 1px solid #1e293b;
+      background: rgba(15, 23, 42, 0.88); border: 1px solid #1e293b;
       border-radius: 12px; padding: 12px; margin-bottom: 10px;
     }
     .ctrl-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; }
@@ -86,7 +85,7 @@
     .formula-box {
       background: rgba(9, 14, 26, 0.95); border-left: 3px solid #38bdf8;
       border-radius: 8px; padding: 9px 12px; font-family: ui-monospace, SFMono-Regular, monospace;
-      font-size: 12px; color: #e2e8f0; margin-top: 8px;
+      font-size: 12px; color: #e2e8f0; margin-top: 8px; line-height: 1.45;
     }
 
     .bottom-hud {
@@ -96,9 +95,9 @@
     }
     .cam-group, .controls-hint {
       pointer-events: auto;
-      background: rgba(10, 17, 32, 0.9); border: 1px solid #1e293b;
+      background: rgba(10, 17, 32, 0.92); border: 1px solid #1e293b;
       border-radius: 12px; padding: 6px 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-      font-size: 12px; color: #94a3b8; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      font-size: 12px; color: #94a3b8; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
     }
     .cam-btn {
       padding: 6px 12px; border-radius: 8px; border: 1px solid #334155;
@@ -128,15 +127,14 @@
   <div id="stage-wrap">
     <div class="side-panel" id="panel"></div>
     <div id="labels-layer"></div>
-    <canvas id="c3d"></canvas>
 
     <div class="bottom-hud">
       <div class="cam-group">
         <span>Камера:</span>
-        <button class="cam-btn active" data-cam="persp" onclick="setCameraPreset('persp', this)">3D-перспектива</button>
-        <button class="cam-btn" data-cam="side" onclick="setCameraPreset('side', this)">Вид сбоку</button>
-        <button class="cam-btn" data-cam="top" onclick="setCameraPreset('top', this)">Вид сверху</button>
-        <button class="cam-btn" data-cam="screen" onclick="setCameraPreset('screen', this)">Вид на экран</button>
+        <button class="cam-btn active" onclick="setCamPreset('persp', this)">3D-перспектива</button>
+        <button class="cam-btn" onclick="setCamPreset('side', this)">Вид сбоку</button>
+        <button class="cam-btn" onclick="setCamPreset('top', this)">Вид сверху</button>
+        <button class="cam-btn" onclick="setCamPreset('screen', this)">Вид на экран</button>
       </div>
       <div class="controls-hint">
         ЛКМ / 1 палец — вращение • Колёсико / щипок — масштаб • ПКМ / 2 пальца — сдвиг
@@ -144,12 +142,37 @@
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script>
     const wrap = document.getElementById('stage-wrap');
-    const canvas = document.getElementById('c3d');
-    const ctx = canvas.getContext('2d');
     const panel = document.getElementById('panel');
     const labelsLayer = document.getElementById('labels-layer');
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050811);
+
+    const camera = new THREE.PerspectiveCamera(45, Math.max(1, wrap.clientWidth) / Math.max(1, wrap.clientHeight), 0.1, 100);
+    camera.position.set(6.8, 3.8, 8.8);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    wrap.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.target.set(0.7, -0.25, 0);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.95);
+    dirLight.position.set(6, 10, 7);
+    scene.add(dirLight);
+
+    const grid = new THREE.GridHelper(18, 18, 0x1e293b, 0x0d1526);
+    grid.position.y = -2.1;
+    scene.add(grid);
 
     let mode = 'interference';
     const state = {
@@ -159,18 +182,12 @@
       analyzerAngle: 45
     };
 
-    let cam = {
-      yaw: 0.62,
-      pitch: 0.34,
-      zoom: 1.0,
-      panX: 0,
-      panY: 0
-    };
+    let modeGroup = new THREE.Group();
+    scene.add(modeGroup);
+    let animFn = null;
+    let labelsData = [];
 
-    let dragMode = null;
-    let lastX = 0, lastY = 0;
-
-    function wavelengthRgb(nm) {
+    function wavelengthHex(nm) {
       let r = 0, g = 0, b = 0;
       if (nm >= 380 && nm < 440) { r = -(nm - 440) / 60; b = 1; }
       else if (nm < 490) { g = (nm - 440) / 50; b = 1; }
@@ -178,60 +195,46 @@
       else if (nm < 580) { r = (nm - 510) / 70; g = 1; }
       else if (nm < 645) { r = 1; g = -(nm - 645) / 65; }
       else { r = 1; }
-      return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+      return (Math.round(r * 255) << 16) + (Math.round(g * 255) << 8) + Math.round(b * 255);
     }
 
-    function rgba(rgb, a) {
-      return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${a})`;
-    }
-
-    function project(x, y, z, w, h) {
-      const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw);
-      const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
-
-      const x1 = x * cy - z * sy;
-      const z1 = x * sy + z * cy;
-      const y2 = y * cp - z1 * sp;
-      const z2 = y * sp + z1 * cp;
-
-      const dist = 12;
-      const persp = dist / Math.max(3.5, dist + z2);
-      const scale = Math.min(w, h) * 0.145 * cam.zoom * persp;
-
-      return {
-        sx: w * 0.56 + cam.panX + x1 * scale,
-        sy: h * 0.52 + cam.panY - y2 * scale,
-        z: z2,
-        scale
-      };
-    }
-
-    function drawPoly3D(pts3d, strokeStyle, lineWidth, fillStyle = null, w, h) {
-      if (pts3d.length < 2) return;
-      ctx.beginPath();
-      pts3d.forEach((pt, i) => {
-        const p = project(pt[0], pt[1], pt[2], w, h);
-        if (i === 0) ctx.moveTo(p.sx, p.sy);
-        else ctx.lineTo(p.sx, p.sy);
+    function setLabels(items) {
+      labelsLayer.innerHTML = '';
+      labelsData = items.map(({ text, pos }) => {
+        const el = document.createElement('div');
+        el.className = 'scene-tag';
+        el.textContent = text;
+        labelsLayer.appendChild(el);
+        return { el, vec: new THREE.Vector3(pos[0], pos[1], pos[2]) };
       });
-      if (fillStyle) {
-        ctx.closePath();
-        ctx.fillStyle = fillStyle;
-        ctx.fill();
-      }
-      if (strokeStyle) {
-        ctx.strokeStyle = strokeStyle;
-        ctx.lineWidth = lineWidth;
-        ctx.stroke();
-      }
+      updateLabelsPos();
     }
 
-    function drawQuad3D(p00, p10, p11, p01, strokeStyle, fillStyle, w, h) {
-      drawPoly3D([p00, p10, p11, p01], strokeStyle, 1.5, fillStyle, w, h);
+    function updateLabelsPos() {
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      labelsData.forEach(({ el, vec }) => {
+        const p = vec.clone().project(camera);
+        if (p.z > 1) {
+          el.style.display = 'none';
+          return;
+        }
+        el.style.display = 'block';
+        el.style.left = `${(p.x * 0.5 + 0.5) * w}px`;
+        el.style.top = `${(-p.y * 0.5 + 0.5) * h}px`;
+      });
+    }
+
+    function clearGroup() {
+      scene.remove(modeGroup);
+      modeGroup = new THREE.Group();
+      scene.add(modeGroup);
+      animFn = null;
     }
 
     function renderPanel() {
       if (mode === 'interference') {
+        const fringeIndex = ((state.lambda / 530) * (1.8 / state.slitDist)).toFixed(2);
         panel.innerHTML = `
           <div class="stage-kicker">Этап 1 • Волновая природа</div>
           <h2>Интерференция (опыт Юнга)</h2>
@@ -253,9 +256,11 @@
             </div>
             <input type="range" min="0.8" max="2.6" step="0.1" value="${state.slitDist}" oninput="setParam('slitDist', +this.value)">
           </div>
-          <div class="formula-box">Δx = λ · L / d</div>
+          <div class="formula-box">Δx = λ · L / d<br>Относит. ширина полосы: ${fringeIndex}×</div>
         `;
       } else if (mode === 'diffraction') {
+        const sinPhi1 = Math.min(0.95, (state.lambda * 1e-3) / state.gratingPeriod);
+        const deg1 = ((Math.asin(sinPhi1) * 180) / Math.PI).toFixed(1);
         panel.innerHTML = `
           <div class="stage-kicker">Этап 2 • Измерение длины волны</div>
           <h2>Дифракция на решётке</h2>
@@ -276,7 +281,7 @@
             </div>
             <input type="range" min="1.2" max="3.0" step="0.1" value="${state.gratingPeriod}" oninput="setParam('gratingPeriod', +this.value)">
           </div>
-          <div class="formula-box">d · sin φ = k · λ  ⇒  λ ≈ (d · x₁) / L</div>
+          <div class="formula-box">d · sin φ = k · λ  ⇒  λ ≈ (d · x₁) / L<br>Угол 1-го порядка (k = 1): φ₁ ≈ ${deg1}°</div>
         `;
       } else if (mode === 'polarization') {
         const rad = (state.analyzerAngle * Math.PI) / 180;
@@ -315,242 +320,535 @@
       }
     }
 
-    function drawGrid(w, h) {
-      const y = -2.1;
-      for (let i = -8; i <= 8; i++) {
-        drawPoly3D([[-8, y, i], [8, y, i]], 'rgba(51, 65, 85, 0.28)', 1, null, w, h);
-        drawPoly3D([[i, y, -8], [i, y, 8]], 'rgba(51, 65, 85, 0.28)', 1, null, w, h);
-      }
-    }
+    function buildInterference() {
+      clearGroup();
+      const hex = wavelengthHex(state.lambda);
+      const d = state.slitDist;
 
-    function setLabels(items, w, h) {
-      labelsLayer.innerHTML = '';
-      items.forEach(({ text, pos }) => {
-        const p = project(pos[0], pos[1], pos[2], w, h);
-        const div = document.createElement('div');
-        div.className = 'scene-tag';
-        div.textContent = text;
-        div.style.left = `${p.sx}px`;
-        div.style.top = `${p.sy}px`;
-        labelsLayer.appendChild(div);
-      });
-    }
+      const bench = new THREE.Mesh(
+        new THREE.BoxGeometry(9.2, 0.14, 0.7),
+        new THREE.MeshStandardMaterial({ color: 0x111827 })
+      );
+      bench.position.set(-0.4, -2.02, 0);
+      modeGroup.add(bench);
 
-    function drawScene(t, w, h) {
-      ctx.clearRect(0, 0, w, h);
-      drawGrid(w, h);
+      const laser = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.26, 0.26, 1.35, 24),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.4, roughness: 0.5 })
+      );
+      laser.rotation.z = Math.PI / 2;
+      laser.position.set(-4.3, -0.35, 0);
+      modeGroup.add(laser);
 
-      const rgb = wavelengthRgb(state.lambda);
-      const tags = [];
+      const cone = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.14, 1.15, 2.55, 28, 1, true),
+        new THREE.MeshBasicMaterial({ color: hex, transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false })
+      );
+      cone.rotation.z = Math.PI / 2;
+      cone.position.set(-2.4, -0.35, 0);
+      modeGroup.add(cone);
 
-      if (mode === 'interference') {
-        const d = state.slitDist;
-        // Оптическая скамья
-        drawQuad3D([-5.2, -2.05, -0.45], [4.2, -2.05, -0.45], [4.2, -2.05, 0.45], [-5.2, -2.05, 0.45],
-          '#334155', 'rgba(15, 23, 42, 0.85)', w, h);
+      const slitMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 });
+      const halfD = d * 0.45;
+      const topWall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 3.2, 1.6), slitMat);
+      topWall.position.set(-1.1, -0.35, -(halfD + 0.92));
+      const midWall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 3.2, Math.max(0.14, halfD * 2 - 0.24)), slitMat);
+      midWall.position.set(-1.1, -0.35, 0);
+      const botWall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 3.2, 1.6), slitMat);
+      botWall.position.set(-1.1, -0.35, halfD + 0.92);
+      modeGroup.add(topWall, midWall, botWall);
 
-        // Конусный пучок от лазера к щелям
-        const coneSteps = 18;
-        for (let i = 0; i < coneSteps; i++) {
-          const a1 = (i / coneSteps) * Math.PI * 2;
-          const a2 = ((i + 1) / coneSteps) * Math.PI * 2;
-          const rLaser = 0.22, rSlit = 1.15;
-          drawQuad3D(
-            [-4.1, -0.2 + Math.cos(a1) * rLaser, Math.sin(a1) * rLaser],
-            [-4.1, -0.2 + Math.cos(a2) * rLaser, Math.sin(a2) * rLaser],
-            [-1.6, -0.2 + Math.cos(a2) * rSlit, Math.sin(a2) * rSlit],
-            [-1.6, -0.2 + Math.cos(a1) * rSlit, Math.sin(a1) * rSlit],
-            null, rgba(rgb, 0.14), w, h
-          );
-        }
-
-        // Пластина с двумя щелями S1 и S2
-        const halfD = d * 0.45;
-        drawQuad3D([-1.6, -1.8, -2.2], [-1.6, -1.8, -halfD - 0.12], [-1.6, 1.4, -halfD - 0.12], [-1.6, 1.4, -2.2],
-          '#64748b', 'rgba(30, 41, 59, 0.9)', w, h);
-        drawQuad3D([-1.6, -1.8, -halfD + 0.12], [-1.6, -1.8, halfD - 0.12], [-1.6, 1.4, halfD - 0.12], [-1.6, 1.4, -halfD + 0.12],
-          '#64748b', 'rgba(30, 41, 59, 0.9)', w, h);
-        drawQuad3D([-1.6, -1.8, halfD + 0.12], [-1.6, -1.8, 2.2], [-1.6, 1.4, 2.2], [-1.6, 1.4, halfD + 0.12],
-          '#64748b', 'rgba(30, 41, 59, 0.9)', w, h);
-
-        // Волновые фронты от двух щелей
-        const speed = 0.42 * (530 / state.lambda);
-        for (const sZ of [-halfD, halfD]) {
-          for (let rIdx = 0; rIdx < 8; rIdx++) {
-            const phase = (t * speed + rIdx / 8) % 1;
-            const radius = 0.25 + phase * 4.6;
-            const alpha = (1 - phase) * 0.55;
-            const arcPts = [];
-            for (let a = -1.05; a <= 1.05; a += 0.12) {
-              arcPts.push([-1.55 + Math.cos(a) * radius, -0.2, sZ + Math.sin(a) * radius]);
-            }
-            drawPoly3D(arcPts, rgba(rgb, alpha), 2.2, null, w, h);
-          }
-        }
-
-        // Экран с интерференционными полосами
-        const scrX = 3.5;
-        drawQuad3D([scrX, -1.8, -2.4], [scrX, -1.8, 2.4], [scrX, 1.4, 2.4], [scrX, 1.4, -2.4],
-          '#475569', 'rgba(9, 13, 22, 0.95)', w, h);
-
-        const strips = 36;
-        for (let i = 0; i < strips; i++) {
-          const z0 = -2.2 + (4.4 * i) / strips;
-          const z1 = -2.2 + (4.4 * (i + 1)) / strips;
-          const zMid = (z0 + z1) * 0.5;
-          const inten = Math.pow(Math.cos(zMid * d * (530 / state.lambda) * 2.1), 2);
-          drawQuad3D([scrX + 0.02, -1.45, z0], [scrX + 0.02, -1.45, z1], [scrX + 0.02, 1.05, z1], [scrX + 0.02, 1.05, z0],
-            null, rgba(rgb, inten * 0.92), w, h);
-        }
-
-        tags.push(
-          { text: 'Лазер (когерентный свет)', pos: [-4.2, 0.85, 0] },
-          { text: 'Две щели S₁ и S₂', pos: [-1.6, 1.8, 0] },
-          { text: 'Экран (интерференционные полосы)', pos: [3.5, 1.85, 0] }
+      // Опорные лучи от щелей S1 и S2 к центральному максимуму на экране
+      for (const sZ of [-halfD, halfD]) {
+        const p0 = new THREE.Vector3(-1.05, -0.35, sZ);
+        const p1 = new THREE.Vector3(3.43, -0.35, 0);
+        const dir = new THREE.Vector3().subVectors(p1, p0);
+        const ray = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.022, 0.022, dir.length(), 8),
+          new THREE.MeshBasicMaterial({ color: hex, transparent: true, opacity: 0.48 })
         );
-      } else if (mode === 'diffraction') {
-        const gX = -2.0, sX = 3.5;
-        drawQuad3D([gX, -1.7, -1.8], [gX, -1.7, 1.8], [gX, 1.5, 1.8], [gX, 1.5, -1.8],
-          '#64748b', 'rgba(30, 41, 59, 0.85)', w, h);
-        drawQuad3D([sX, -1.8, -2.6], [sX, -1.8, 2.6], [sX, 1.6, 2.6], [sX, 1.6, -2.6],
-          '#475569', 'rgba(15, 23, 42, 0.92)', w, h);
+        ray.position.copy(p0).add(p1).multiplyScalar(0.5);
+        ray.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+        modeGroup.add(ray);
+      }
 
-        drawPoly3D([[-4.4, -0.1, 0], [gX, -0.1, 0]], rgba(rgb, 0.95), 4, null, w, h);
+      const fronts = [];
+      for (const sZ of [-halfD, halfD]) {
+        for (let i = 0; i < 9; i++) {
+          const arc = new THREE.Mesh(
+            new THREE.RingGeometry(0.12, 0.2, 36, 1, -Math.PI / 2.3, Math.PI / 1.15),
+            new THREE.MeshBasicMaterial({ color: hex, side: THREE.DoubleSide, transparent: true, opacity: 0.55, depthWrite: false })
+          );
+          arc.rotation.x = -Math.PI / 2;
+          arc.position.set(-1.02, -0.35, sZ);
+          modeGroup.add(arc);
+          fronts.push({ mesh: arc, phase: i / 9 });
+        }
+      }
 
-        const x1 = 0.95 * (state.lambda / 550) * (2.0 / state.gratingPeriod);
-        [-2, -1, 0, 1, 2].forEach(k => {
-          const zEnd = k * x1;
-          if (Math.abs(zEnd) > 2.4) return;
-          drawPoly3D([[gX, -0.1, 0], [sX, -0.1, zEnd]], rgba(rgb, k === 0 ? 0.95 : 0.72), k === 0 ? 3.5 : 2.2, null, w, h);
-          const p = project(sX, -0.1, zEnd, w, h);
-          ctx.beginPath();
-          ctx.arc(p.sx, p.sy, (k === 0 ? 7 : 5) * p.scale / 22, 0, Math.PI * 2);
-          ctx.fillStyle = rgba(rgb, 1);
-          ctx.fill();
+      const texCanvas = document.createElement('canvas');
+      texCanvas.width = 256;
+      texCanvas.height = 128;
+      const tctx = texCanvas.getContext('2d');
+      const hexStr = '#' + hex.toString(16).padStart(6, '0');
+      tctx.fillStyle = '#070b14';
+      tctx.fillRect(0, 0, 256, 128);
+      for (let x = 0; x < 256; x++) {
+        const u = (x - 128) / 22;
+        const inten = Math.pow(Math.cos(u * d * (530 / state.lambda) * 2.1), 2);
+        tctx.globalAlpha = inten * 0.95;
+        tctx.fillStyle = hexStr;
+        tctx.fillRect(x, 12, 1, 104);
+      }
+      tctx.globalAlpha = 1;
+      tctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
+      tctx.lineWidth = 1;
+      tctx.beginPath();
+      tctx.moveTo(0, 114);
+      tctx.lineTo(256, 114);
+      tctx.stroke();
+
+      const screen = new THREE.Mesh(
+        new THREE.BoxGeometry(0.14, 3.3, 4.6),
+        new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(texCanvas) })
+      );
+      screen.position.set(3.5, -0.35, 0);
+      modeGroup.add(screen);
+
+      setLabels([
+        { text: 'Лазер (когерентный свет)', pos: [-4.2, 0.75, 0] },
+        { text: 'Две щели S₁ и S₂', pos: [-1.1, 1.65, 0] },
+        { text: 'Экран (интерференционные полосы)', pos: [3.5, 1.75, 0] }
+      ]);
+
+      animFn = (t) => {
+        const spd = 0.42 * (530 / state.lambda);
+        fronts.forEach(f => {
+          const p = (t * spd + f.phase) % 1;
+          const s = 0.25 + p * 5.4;
+          f.mesh.scale.set(s, s, 1);
+          f.mesh.material.opacity = (1 - p) * 0.65;
+        });
+      };
+    }
+
+    function buildDiffraction() {
+      clearGroup();
+      const hex = wavelengthHex(state.lambda);
+
+      const bench = new THREE.Mesh(
+        new THREE.BoxGeometry(9.2, 0.14, 0.7),
+        new THREE.MeshStandardMaterial({ color: 0x111827 })
+      );
+      bench.position.set(-0.3, -2.05, 0);
+      modeGroup.add(bench);
+
+      const laser = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.24, 0.24, 1.2, 24),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.4, roughness: 0.5 })
+      );
+      laser.rotation.z = Math.PI / 2;
+      laser.position.set(-4.2, -0.3, 0);
+      modeGroup.add(laser);
+
+      const grating = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 3.2, 3.4),
+        new THREE.MeshStandardMaterial({ color: 0x475569, transparent: true, opacity: 0.78 })
+      );
+      grating.position.set(-2.0, -0.3, 0);
+      modeGroup.add(grating);
+
+      // Штрихи дифракционной решётки на пластине
+      for (let i = -8; i <= 8; i++) {
+        const lineMesh = new THREE.Mesh(
+          new THREE.BoxGeometry(0.14, 2.8, 0.03),
+          new THREE.MeshBasicMaterial({ color: 0x94a3b8 })
+        );
+        lineMesh.position.set(-2.0, -0.3, i * 0.16);
+        modeGroup.add(lineMesh);
+      }
+
+      // Экран со шкалой
+      const scaleCanvas = document.createElement('canvas');
+      scaleCanvas.width = 256;
+      scaleCanvas.height = 128;
+      const sctx = scaleCanvas.getContext('2d');
+      sctx.fillStyle = '#090e1a';
+      sctx.fillRect(0, 0, 256, 128);
+      sctx.strokeStyle = '#64748b';
+      sctx.lineWidth = 1.5;
+      sctx.beginPath();
+      sctx.moveTo(12, 92);
+      sctx.lineTo(244, 92);
+      for (let x = 16; x <= 240; x += 14) {
+        const major = ((x - 16) / 14) % 4 === 0;
+        sctx.moveTo(x, 92);
+        sctx.lineTo(x, major ? 76 : 84);
+      }
+      sctx.stroke();
+
+      const screen = new THREE.Mesh(
+        new THREE.BoxGeometry(0.14, 3.4, 5.2),
+        new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(scaleCanvas) })
+      );
+      screen.position.set(3.4, -0.3, 0);
+      modeGroup.add(screen);
+
+      const inBeam = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.07, 0.07, 2.2, 12),
+        new THREE.MeshBasicMaterial({ color: hex })
+      );
+      inBeam.rotation.z = Math.PI / 2;
+      inBeam.position.set(-3.1, -0.3, 0);
+      modeGroup.add(inBeam);
+
+      const x1 = 0.95 * (state.lambda / 550) * (2.0 / state.gratingPeriod);
+      [-2, -1, 0, 1, 2].forEach(k => {
+        const zEnd = k * x1;
+        if (Math.abs(zEnd) > 2.45) return;
+        const p0 = new THREE.Vector3(-2.0, -0.3, 0);
+        const p1 = new THREE.Vector3(3.32, -0.3, zEnd);
+        const dir = new THREE.Vector3().subVectors(p1, p0);
+        const beam = new THREE.Mesh(
+          new THREE.CylinderGeometry(k === 0 ? 0.065 : 0.04, k === 0 ? 0.065 : 0.04, dir.length(), 10),
+          new THREE.MeshBasicMaterial({ color: hex, transparent: true, opacity: k === 0 ? 0.95 : 0.72 })
+        );
+        beam.position.copy(p0).add(p1).multiplyScalar(0.5);
+        beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+        modeGroup.add(beam);
+
+        const spot = new THREE.Mesh(
+          new THREE.SphereGeometry(k === 0 ? 0.15 : 0.11, 14, 14),
+          new THREE.MeshBasicMaterial({ color: hex })
+        );
+        spot.position.copy(p1);
+        modeGroup.add(spot);
+      });
+
+      setLabels([
+        { text: 'Дифракционная решётка (период d)', pos: [-2.0, 1.65, 0] },
+        { text: 'Экран со шкалой (L = 1.50 м)', pos: [3.4, 1.75, 0] }
+      ]);
+    }
+
+    function createArrow(color) {
+      const group = new THREE.Group();
+      const shaft = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.022, 0.022, 1, 8),
+        new THREE.MeshBasicMaterial({ color })
+      );
+      shaft.position.y = 0.5;
+      const head = new THREE.Mesh(
+        new THREE.ConeGeometry(0.075, 0.2, 10),
+        new THREE.MeshBasicMaterial({ color })
+      );
+      head.position.y = 1.05;
+      group.add(shaft, head);
+      return group;
+    }
+
+    function setArrowVector(arrow, origin, vec) {
+      const len = vec.length();
+      if (len < 0.03) {
+        arrow.visible = false;
+        return;
+      }
+      arrow.visible = true;
+      arrow.position.copy(origin);
+      const dir = vec.clone().normalize();
+      arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+      const shaftScale = Math.max(0.05, len - 0.18);
+      arrow.children[0].scale.set(1, shaftScale, 1);
+      arrow.children[0].position.y = shaftScale * 0.5;
+      arrow.children[1].position.y = shaftScale + 0.09;
+    }
+
+    function makeWaveLine(x0, x1, segs, color) {
+      const pts = [];
+      for (let i = 0; i <= segs; i++) {
+        pts.push(new THREE.Vector3(x0 + ((x1 - x0) * i) / segs, 0, 0));
+      }
+      const geom = new THREE.BufferGeometry().setFromPoints(pts);
+      const line = new THREE.Line(geom, new THREE.LineBasicMaterial({ color }));
+      return { line, geom, x0, x1, segs };
+    }
+
+    function buildPolarization() {
+      clearGroup();
+      const rad = (state.analyzerAngle * Math.PI) / 180;
+      const cosA = Math.cos(rad);
+      const inten = cosA * cosA;
+
+      const rail = new THREE.Mesh(
+        new THREE.BoxGeometry(8.8, 0.12, 0.65),
+        new THREE.MeshStandardMaterial({ color: 0x0f172a })
+      );
+      rail.position.set(0.3, -1.95, 0);
+      modeGroup.add(rail);
+
+      const axis = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.015, 0.015, 8.6, 8),
+        new THREE.MeshBasicMaterial({ color: 0x475569 })
+      );
+      axis.rotation.z = Math.PI / 2;
+      axis.position.set(0.3, 0, 0);
+      modeGroup.add(axis);
+
+      const sourceOuter = new THREE.Mesh(
+        new THREE.CylinderGeometry(1.15, 1.15, 0.14, 32),
+        new THREE.MeshStandardMaterial({ color: 0xca8a04, transparent: true, opacity: 0.35 })
+      );
+      sourceOuter.rotation.z = Math.PI / 2;
+      sourceOuter.position.set(-3.4, 0, 0);
+      const sourceCore = new THREE.Mesh(
+        new THREE.CircleGeometry(0.85, 32),
+        new THREE.MeshBasicMaterial({ color: 0xfef08a })
+      );
+      sourceCore.rotation.y = Math.PI / 2;
+      sourceCore.position.set(-3.32, 0, 0);
+      modeGroup.add(sourceOuter, sourceCore);
+
+      const polRing = new THREE.Mesh(
+        new THREE.TorusGeometry(1.25, 0.055, 12, 40),
+        new THREE.MeshStandardMaterial({ color: 0x38bdf8 })
+      );
+      polRing.rotation.y = Math.PI / 2;
+      polRing.position.set(-1.1, 0, 0);
+      const polAxisLine = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.025, 0.025, 2.4, 8),
+        new THREE.MeshBasicMaterial({ color: 0x7dd3fc })
+      );
+      polAxisLine.position.set(-1.1, 0, 0);
+      modeGroup.add(polRing, polAxisLine);
+
+      const anaGroup = new THREE.Group();
+      anaGroup.position.set(1.3, 0, 0);
+      const anaRing = new THREE.Mesh(
+        new THREE.TorusGeometry(1.25, 0.055, 12, 40),
+        new THREE.MeshStandardMaterial({ color: 0xf59e0b })
+      );
+      anaRing.rotation.y = Math.PI / 2;
+      const anaAxisLine = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.028, 0.028, 2.4, 8),
+        new THREE.MeshBasicMaterial({ color: 0xfde047 })
+      );
+      anaAxisLine.rotation.x = rad;
+      anaGroup.add(anaRing, anaAxisLine);
+      modeGroup.add(anaGroup);
+
+      const scrFrame = new THREE.Mesh(
+        new THREE.CylinderGeometry(1.15, 1.15, 0.16, 32),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b })
+      );
+      scrFrame.rotation.z = Math.PI / 2;
+      scrFrame.position.set(3.7, 0, 0);
+      const scrFace = new THREE.Mesh(
+        new THREE.CircleGeometry(0.95, 32),
+        new THREE.MeshBasicMaterial({
+          color: new THREE.Color(inten * 0.98, inten * 0.85, inten * 0.35)
+        })
+      );
+      scrFace.rotation.y = -Math.PI / 2;
+      scrFace.position.set(3.61, 0, 0);
+      modeGroup.add(scrFrame, scrFace);
+
+      const n1 = makeWaveLine(-3.2, -1.1, 36, 0xfacc15);
+      const n2 = makeWaveLine(-3.2, -1.1, 36, 0xf59e0b);
+      const pWave = makeWaveLine(-1.1, 1.3, 40, 0x38bdf8);
+      const aWave = makeWaveLine(1.3, 3.55, 40, 0xf59e0b);
+      modeGroup.add(n1.line, n2.line, pWave.line, aWave.line);
+
+      const preArrows = [];
+      for (let i = 0; i < 6; i++) {
+        const x = -2.95 + i * 0.34;
+        const a1 = createArrow(0xfacc15);
+        const a2 = createArrow(0xf59e0b);
+        modeGroup.add(a1, a2);
+        preArrows.push({ x, a1, a2, angle: (i * 0.85) });
+      }
+
+      const midArrows = [];
+      for (let i = 0; i < 6; i++) {
+        const x = -0.85 + i * 0.4;
+        const ar = createArrow(0x38bdf8);
+        modeGroup.add(ar);
+        midArrows.push({ x, ar });
+      }
+
+      const postArrows = [];
+      for (let i = 0; i < 6; i++) {
+        const x = 1.55 + i * 0.36;
+        const ar = createArrow(0xf59e0b);
+        modeGroup.add(ar);
+        postArrows.push({ x, ar });
+      }
+
+      setLabels([
+        { text: 'Естественный свет (много плоскостей)', pos: [-3.3, 1.65, 0] },
+        { text: 'Поляризатор (ось 0°)', pos: [-1.1, 1.85, 0] },
+        { text: 'Анализатор (угол α)', pos: [1.3, 1.85, 0] },
+        { text: 'Экран (закон Малюса)', pos: [3.7, 1.65, 0] }
+      ]);
+
+      animFn = (t) => {
+        const k = 2.1;
+        const amp = 0.85;
+        const ampOut = amp * Math.abs(cosA);
+
+        const p1 = n1.geom.attributes.position;
+        const p2 = n2.geom.attributes.position;
+        for (let i = 0; i <= n1.segs; i++) {
+          const x = n1.x0 + ((n1.x1 - n1.x0) * i) / n1.segs;
+          const v1 = Math.sin(t * 4 - x * k) * amp;
+          const v2 = Math.cos(t * 4 - x * k + 0.7) * amp;
+          p1.setXYZ(i, x, v1 * 0.85, v1 * 0.52);
+          p2.setXYZ(i, x, -v2 * 0.5, v2 * 0.86);
+        }
+        p1.needsUpdate = true;
+        p2.needsUpdate = true;
+
+        preArrows.forEach(({ x, a1, a2, angle }) => {
+          const v1 = Math.sin(t * 4 - x * k) * amp;
+          const v2 = Math.cos(t * 4 - x * k + 0.7) * amp;
+          setArrowVector(a1, new THREE.Vector3(x, 0, 0), new THREE.Vector3(0, v1 * Math.cos(angle), v1 * Math.sin(angle)));
+          setArrowVector(a2, new THREE.Vector3(x, 0, 0), new THREE.Vector3(0, v2 * Math.cos(angle + 1.1), v2 * Math.sin(angle + 1.1)));
         });
 
-        tags.push(
-          { text: 'Дифракционная решётка (период d)', pos: [gX, 1.9, 0] },
-          { text: 'Экран со шкалой (L = 1.50 м)', pos: [sX, 2.0, 0] }
-        );
-      } else if (mode === 'polarization') {
-        const rad = (state.analyzerAngle * Math.PI) / 180;
-        const ampOut = Math.abs(Math.cos(rad)) * 1.15;
-
-        drawPoly3D([[-4.6, 0, 0], [4.6, 0, 0]], 'rgba(100, 116, 139, 0.45)', 1.5, null, w, h);
-
-        const wIn1 = [], wIn2 = [], wMid = [], wOut = [];
-        for (let i = 0; i <= 50; i++) {
-          const x = -4.5 + (9.0 * i) / 50;
-          const v = Math.sin(t * 4 - x * 2.2);
-          if (x < -1.4) {
-            wIn1.push([x, v * 1.1, 0]);
-            wIn2.push([x, 0, Math.cos(t * 4 - x * 2.2 + 0.6) * 0.9]);
-          } else if (x < 1.4) {
-            wMid.push([x, v * 1.15, 0]);
-          } else {
-            wOut.push([x, v * ampOut * Math.cos(rad), v * ampOut * Math.sin(rad)]);
-          }
+        const pm = pWave.geom.attributes.position;
+        for (let i = 0; i <= pWave.segs; i++) {
+          const x = pWave.x0 + ((pWave.x1 - pWave.x0) * i) / pWave.segs;
+          pm.setXYZ(i, x, Math.sin(t * 4 - x * k) * amp, 0);
         }
-        drawPoly3D(wIn1, 'rgba(244, 63, 94, 0.85)', 2.2, null, w, h);
-        drawPoly3D(wIn2, 'rgba(251, 146, 60, 0.85)', 2.2, null, w, h);
-        drawPoly3D(wMid, 'rgba(56, 189, 248, 0.95)', 2.8, null, w, h);
-        drawPoly3D(wOut, 'rgba(250, 204, 21, 0.95)', 2.8, null, w, h);
+        pm.needsUpdate = true;
 
-        tags.push(
-          { text: 'Поляризатор', pos: [-1.4, 1.7, 0] },
-          { text: 'Анализатор', pos: [1.4, 1.7, 0] }
-        );
-      } else {
-        const k = (550 / state.lambda) * 1.45;
-        const eLine = [], bLine = [];
-        for (let i = 0; i <= 70; i++) {
-          const x = -4.5 + (9.0 * i) / 70;
-          const val = Math.sin(t * 3.5 - x * k) * 1.35;
-          eLine.push([x, val, 0]);
-          bLine.push([x, 0, val]);
-          if (i % 4 === 0) {
-            drawPoly3D([[x, 0, 0], [x, val, 0]], 'rgba(244, 63, 94, 0.55)', 1.5, null, w, h);
-            drawPoly3D([[x, 0, 0], [x, 0, val]], 'rgba(56, 189, 248, 0.55)', 1.5, null, w, h);
-          }
+        midArrows.forEach(({ x, ar }) => {
+          const v = Math.sin(t * 4 - x * k) * amp;
+          setArrowVector(ar, new THREE.Vector3(x, 0, 0), new THREE.Vector3(0, v, 0));
+        });
+
+        const pa = aWave.geom.attributes.position;
+        const cA = Math.cos(rad), sA = Math.sin(rad);
+        for (let i = 0; i <= aWave.segs; i++) {
+          const x = aWave.x0 + ((aWave.x1 - aWave.x0) * i) / aWave.segs;
+          const v = Math.sin(t * 4 - x * k) * ampOut;
+          pa.setXYZ(i, x, v * cA, v * sA);
         }
-        drawPoly3D(eLine, '#f43f5e', 2.8, null, w, h);
-        drawPoly3D(bLine, '#38bdf8', 2.8, null, w, h);
+        pa.needsUpdate = true;
 
-        tags.push(
-          { text: 'Вектор E (электрическое поле)', pos: [-2.0, 1.75, 0] },
-          { text: 'Вектор B (магнитное поле)', pos: [1.8, 0.35, 1.65] }
-        );
+        postArrows.forEach(({ x, ar }) => {
+          const v = Math.sin(t * 4 - x * k) * ampOut;
+          setArrowVector(ar, new THREE.Vector3(x, 0, 0), new THREE.Vector3(0, v * cA, v * sA));
+        });
+      };
+    }
+
+    function buildEMWave() {
+      clearGroup();
+      const axis = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.022, 0.022, 9.4, 8),
+        new THREE.MeshBasicMaterial({ color: 0x64748b })
+      );
+      axis.rotation.z = Math.PI / 2;
+      modeGroup.add(axis);
+
+      const segs = 100;
+      const eLine = makeWaveLine(-4.5, 4.5, segs, 0xf43f5e);
+      const bLine = makeWaveLine(-4.5, 4.5, segs, 0x38bdf8);
+      modeGroup.add(eLine.line, bLine.line);
+
+      const count = 20;
+      const eBars = [], bBars = [];
+      for (let i = 0; i < count; i++) {
+        const x = -4.4 + (i / (count - 1)) * 8.8;
+        const eb = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1, 6), new THREE.MeshBasicMaterial({ color: 0xf43f5e }));
+        const bb = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1, 6), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+        bb.rotation.x = Math.PI / 2;
+        modeGroup.add(eb, bb);
+        eBars.push({ m: eb, x });
+        bBars.push({ m: bb, x });
       }
 
-      setLabels(tags, w, h);
+      setLabels([
+        { text: 'Вектор E (электрическое поле)', pos: [-2.0, 1.75, 0] },
+        { text: 'Вектор B (магнитное поле)', pos: [1.8, 0.35, 1.65] }
+      ]);
+
+      animFn = (t) => {
+        const k = (550 / state.lambda) * 1.4, amp = 1.45;
+        const ep = eLine.geom.attributes.position, bp = bLine.geom.attributes.position;
+        for (let i = 0; i <= segs; i++) {
+          const x = -4.5 + (9.0 * i) / segs;
+          const v = Math.sin(t * 3.5 - x * k) * amp;
+          ep.setXYZ(i, x, v, 0);
+          bp.setXYZ(i, x, 0, v);
+        }
+        ep.needsUpdate = true;
+        bp.needsUpdate = true;
+
+        for (let i = 0; i < count; i++) {
+          const v = Math.sin(t * 3.5 - eBars[i].x * k) * amp;
+          eBars[i].m.scale.y = Math.max(0.02, Math.abs(v));
+          eBars[i].m.position.set(eBars[i].x, v / 2, 0);
+          bBars[i].m.scale.y = Math.max(0.02, Math.abs(v));
+          bBars[i].m.position.set(bBars[i].x, 0, v / 2);
+        }
+      };
+    }
+
+    function rebuildStage() {
+      renderPanel();
+      if (mode === 'interference') buildInterference();
+      else if (mode === 'diffraction') buildDiffraction();
+      else if (mode === 'polarization') buildPolarization();
+      else buildEMWave();
     }
 
     window.setParam = (key, val) => {
       state[key] = val;
-      renderPanel();
+      rebuildStage();
     };
 
-    window.setCameraPreset = (preset, btn) => {
+    window.setCamPreset = (preset, btn) => {
       document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
-      cam.panX = 0;
-      cam.panY = 0;
-      cam.zoom = 1.0;
-      if (preset === 'persp') { cam.yaw = 0.62; cam.pitch = 0.34; }
-      else if (preset === 'side') { cam.yaw = 0.0; cam.pitch = 0.06; }
-      else if (preset === 'top') { cam.yaw = 0.0; cam.pitch = 1.25; }
-      else if (preset === 'screen') { cam.yaw = 1.48; cam.pitch = 0.12; }
+      controls.target.set(0.7, -0.25, 0);
+      if (preset === 'persp') camera.position.set(6.8, 3.8, 8.8);
+      else if (preset === 'side') camera.position.set(0.3, 0.4, 10.5);
+      else if (preset === 'top') camera.position.set(0.5, 11.5, 0.1);
+      else if (preset === 'screen') camera.position.set(9.2, 0.4, 0);
+      controls.update();
+      updateLabelsPos();
     };
-
-    canvas.addEventListener('mousedown', e => {
-      dragMode = e.button === 2 ? 'pan' : 'rot';
-      lastX = e.clientX;
-      lastY = e.clientY;
-    });
-    canvas.addEventListener('contextmenu', e => e.preventDefault());
-    window.addEventListener('mouseup', () => { dragMode = null; });
-    window.addEventListener('mousemove', e => {
-      if (!dragMode) return;
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-      lastX = e.clientX;
-      lastY = e.clientY;
-      if (dragMode === 'rot') {
-        cam.yaw += dx * 0.008;
-        cam.pitch = Math.max(-1.35, Math.min(1.35, cam.pitch + dy * 0.008));
-      } else {
-        cam.panX += dx;
-        cam.panY += dy;
-      }
-    });
-    canvas.addEventListener('wheel', e => {
-      e.preventDefault();
-      cam.zoom = Math.max(0.55, Math.min(2.2, cam.zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
-    }, { passive: false });
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         mode = btn.dataset.mode;
-        renderPanel();
+        rebuildStage();
       });
     });
 
-    renderPanel();
-    const startTime = performance.now();
-    function frame(now) {
-      const w = Math.max(1, wrap.clientWidth);
-      const h = Math.max(1, wrap.clientHeight);
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w;
-        canvas.height = h;
-      }
-      drawScene((now - startTime) / 1000, w, h);
-      requestAnimationFrame(frame);
+    controls.addEventListener('change', updateLabelsPos);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = Math.max(1, wrap.clientWidth) / Math.max(1, wrap.clientHeight);
+      camera.updateProjectionMatrix();
+      renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+      updateLabelsPos();
+    });
+
+    rebuildStage();
+
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+      if (animFn) animFn(t);
+      controls.update();
+      renderer.render(scene, camera);
     }
-    requestAnimationFrame(frame);
+    animate();
   </script>
 </body>
 </html>
