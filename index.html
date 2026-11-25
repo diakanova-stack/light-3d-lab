@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Лаборатория: Электромагнитная природа света (11.6.1.3)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    body { background: #090d16; color: #f1f5f9; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+    header {
+      padding: 10px 16px; background: rgba(15, 23, 42, 0.92); border-bottom: 1px solid #1e293b;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; z-index: 10;
+    }
+    header h1 { font-size: 15px; font-weight: 600; color: #38bdf8; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tab {
+      padding: 6px 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b;
+      color: #cbd5e1; cursor: pointer; font-size: 13px; transition: 0.2s;
+    }
+    .tab.active { background: #0284c7; border-color: #38bdf8; color: #fff; font-weight: 600; }
+    #canvas-wrap { position: relative; flex: 1; width: 100%; }
+    canvas { display: block; width: 100%; height: 100%; }
+    .panel {
+      position: absolute; top: 14px; right: 14px; width: 310px; max-width: calc(100vw - 28px);
+      background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(8px);
+      border: 1px solid #334155; border-radius: 12px; padding: 14px; font-size: 13px; line-height: 1.45;
+    }
+    .panel h2 { font-size: 14px; color: #7dd3fc; margin-bottom: 8px; }
+    .control { margin-top: 10px; }
+    .control label { display: flex; justify-content: space-between; margin-bottom: 4px; color: #cbd5e1; }
+    .control input[type="range"] { width: 100%; accent-color: #38bdf8; }
+    .formula {
+      margin-top: 10px; padding: 8px 10px; background: #0f172a; border-left: 3px solid #38bdf8;
+      border-radius: 6px; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: #e2e8f0;
+    }
+    .conclusion { margin-top: 10px; color: #94a3b8; font-size: 12.5px; }
+    .camera-bar {
+      position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
+      background: rgba(15, 23, 42, 0.85); padding: 6px 10px; border-radius: 10px; border: 1px solid #334155;
+    }
+    .cam-btn {
+      padding: 5px 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b;
+      color: #e2e8f0; font-size: 12px; cursor: pointer;
+    }
+    .cam-btn:hover { background: #334155; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>11.6.1.3 • Электромагнитная природа света (3D)</h1>
+    <div class="tabs">
+      <button class="tab active" data-mode="interference">1. Интерференция</button>
+      <button class="tab" data-mode="diffraction">2. Дифракция</button>
+      <button class="tab" data-mode="polarization">3. Поляризация</button>
+      <button class="tab" data-mode="emwave">4. ЭМ-волна Максвелла</button>
+    </div>
+  </header>
+
+  <div id="canvas-wrap">
+    <div class="panel" id="info-panel"></div>
+    <div class="camera-bar">
+      <button class="cam-btn" onclick="setCam(7, 4.5, 9)">3D-перспектива</button>
+      <button class="cam-btn" onclick="setCam(0, 1.2, 11)">Вид сбоку</button>
+      <button class="cam-btn" onclick="setCam(0, 12, 0.1)">Вид сверху</button>
+      <button class="cam-btn" onclick="setCam(9, 1.5, 0)">Вид на экран</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script>
+    const wrap = document.getElementById('canvas-wrap');
+    const panel = document.getElementById('info-panel');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x090d16);
+
+    const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
+    camera.position.set(7, 4.5, 9);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    wrap.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
+
+    const grid = new THREE.GridHelper(16, 16, 0x1e293b, 0x111827);
+    grid.position.y = -2.2;
+    scene.add(grid);
+
+    let mode = 'interference';
+    let state = { lambda: 550, slitDist: 1.2, analyzerAngle: 45, gratingPeriod: 2.0 };
+    let modeGroup = new THREE.Group();
+    scene.add(modeGroup);
+    let animHooks = [];
+
+    function wavelengthToHex(nm) {
+      let r = 0, g = 0, b = 0;
+      if (nm >= 380 && nm < 440) { r = -(nm - 440) / 60; b = 1; }
+      else if (nm < 490) { g = (nm - 440) / 50; b = 1; }
+      else if (nm < 510) { g = 1; b = -(nm - 510) / 20; }
+      else if (nm < 580) { r = (nm - 510) / 70; g = 1; }
+      else if (nm < 645) { r = 1; g = -(nm - 645) / 65; }
+      else if (nm <= 750) { r = 1; }
+      return (Math.round(r * 255) << 16) + (Math.round(g * 255) << 8) + Math.round(b * 255);
+    }
+
+    window.setCam = (x, y, z) => {
+      camera.position.set(x, y, z);
+      controls.target.set(0, 0, 0);
+      controls.update();
+    };
+
+    function clearScene() {
+      scene.remove(modeGroup);
+      modeGroup = new THREE.Group();
+      scene.add(modeGroup);
+      animHooks = [];
+    }
+
+    function buildInterference() {
+      clearScene();
+      const color = wavelengthToHex(state.lambda);
+      const barrierMat = new THREE.MeshStandardMaterial({ color: 0x334155 });
+      const d = state.slitDist;
+
+      // Преграда с двумя щелями
+      const topWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.6, 1.4), barrierMat);
+      topWall.position.set(-2, 0, -(d / 2 + 0.85));
+      const botWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.6, 1.4), barrierMat);
+      botWall.position.set(-2, 0, (d / 2 + 0.85));
+      const midWall = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3.6, Math.max(0.15, d - 0.25)), barrierMat);
+      midWall.position.set(-2, 0, 0);
+      modeGroup.add(topWall, botWall, midWall);
+
+      // Падающий пучок
+      const laser = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.25, 0.25, 3.2, 16),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.55 })
+      );
+      laser.rotation.z = Math.PI / 2;
+      laser.position.set(-3.6, 0, 0);
+      modeGroup.add(laser);
+
+      // Когерентные сферические фронты от двух щелей
+      const rings = [];
+      for (let s of [-d / 2, d / 2]) {
+        for (let i = 0; i < 6; i++) {
+          const ring = new THREE.Mesh(
+            new THREE.RingGeometry(0.1, 0.16, 48, 1, -Math.PI / 2.2, Math.PI / 1.1),
+            new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
+          );
+          ring.rotation.x = -Math.PI / 2;
+          ring.position.set(-1.95, 0, s);
+          modeGroup.add(ring);
+          rings.push({ mesh: ring, offset: i / 6 });
+        }
+      }
+
+      // Экран с интерференционными полосами
+      const canvasTex = document.createElement('canvas');
+      canvasTex.width = 256; canvasTex.height = 64;
+      const ctx = canvasTex.getContext('2d');
+      const hexStr = '#' + color.toString(16).padStart(6, '0');
+      for (let x = 0; x < 256; x++) {
+        const u = (x - 128) / 24;
+        const intensity = Math.pow(Math.cos(u * d * (550 / state.lambda) * 2.2), 2);
+        ctx.fillStyle = '#090d16';
+        ctx.fillRect(x, 0, 1, 64);
+        ctx.globalAlpha = intensity;
+        ctx.fillStyle = hexStr;
+        ctx.fillRect(x, 0, 1, 64);
+        ctx.globalAlpha = 1;
+      }
+      const screen = new THREE.Mesh(
+        new THREE.BoxGeometry(0.15, 3.6, 4.4),
+        new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvasTex) })
+      );
+      screen.position.set(3.2, 0, 0);
+      modeGroup.add(screen);
+
+      animHooks.push((t) => {
+        const speed = 0.45 * (550 / state.lambda);
+        rings.forEach(r => {
+          const p = (t * speed + r.offset) % 1;
+          const scale = 0.2 + p * 5.0;
+          r.mesh.scale.set(scale, scale, 1);
+          r.mesh.material.opacity = (1 - p) * 0.75;
+        });
+      });
+
+      panel.innerHTML = `
+        <h2>1. Интерференция (опыт Юнга)</h2>
+        <div>Когерентные волны от двух щелей складываются и образуют устойчивые максимумы и минимумы освещённости.</div>
+        <div class="control">
+          <label><span>Длина волны λ</span><b>${state.lambda} нм</b></label>
+          <input type="range" min="400" max="700" value="${state.lambda}" oninput="updateParam('lambda', +this.value)">
+        </div>
+        <div class="control">
+          <label><span>Расстояние между щелями d</span><b>${state.slitDist.toFixed(1)} мм</b></label>
+          <input type="range" min="0.6" max="2.0" step="0.1" value="${state.slitDist}" oninput="updateParam('slitDist', +this.value)">
+        </div>
+        <div class="formula">Δx = λ · L / d</div>
+        <div class="conclusion"><b>Вывод:</b> Чередование светлых и тёмных полос доказывает, что свет обладает <b>волновой природой</b>.</div>
+      `;
+    }
+
+    function buildDiffraction() {
+      clearScene();
+      const color = wavelengthToHex(state.lambda);
+      const grating = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 3.4, 3.4),
+        new THREE.MeshStandardMaterial({ color: 0x475569, transparent: true, opacity: 0.75 })
+      );
+      grating.position.set(-2.2, 0, 0);
+      modeGroup.add(grating);
+
+      const screen = new THREE.Mesh(
+        new THREE.BoxGeometry(0.15, 3.6, 5.2),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b })
+      );
+      screen.position.set(3.2, 0, 0);
+      modeGroup.add(screen);
+
+      // Падающий луч
+      const inBeam = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.08, 0.08, 3.0, 12),
+        new THREE.MeshBasicMaterial({ color })
+      );
+      inBeam.rotation.z = Math.PI / 2;
+      inBeam.position.set(-3.7, 0, 0);
+      modeGroup.add(inBeam);
+
+      // Дифракционные максимумы k = -2, -1, 0, +1, +2
+      const L = 5.4;
+      const scaleFactor = (state.lambda / 550) * (2.0 / state.gratingPeriod);
+      const x1 = 0.95 * scaleFactor;
+      [-2, -1, 0, 1, 2].forEach(k => {
+        const zPos = k * x1;
+        if (Math.abs(zPos) > 2.45) return;
+        const start = new THREE.Vector3(-2.
