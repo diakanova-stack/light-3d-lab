@@ -2,108 +2,144 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ЦО 11.6.1.3 • Экспериментальное доказательство электромагнитной природы света</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ЦО 11.6.1.3 • Электромагнитная природа света</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-    body { background: #050811; color: #f1f5f9; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #050811; color: #f1f5f9;
+      display: flex; flex-direction: column;
+    }
 
     .top-bar {
-      padding: 12px 16px;
-      display: flex; flex-wrap: wrap; align-items: stretch; justify-content: space-between; gap: 12px;
+      padding: 10px 14px;
+      display: flex; flex-wrap: wrap; align-items: stretch; justify-content: space-between; gap: 10px;
       z-index: 10; pointer-events: none;
     }
     .title-card {
       pointer-events: auto;
       background: rgba(10, 17, 32, 0.92); border: 1px solid #1e293b; border-radius: 14px;
-      padding: 10px 16px; display: flex; flex-direction: column; justify-content: center; gap: 4px;
+      padding: 9px 14px; display: flex; flex-direction: column; justify-content: center; gap: 3px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
-    .title-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94a3b8; }
+    .title-meta { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #94a3b8; }
     .co-badge {
       background: #0284c7; color: #fff; font-weight: 700; font-size: 11px;
-      padding: 2px 8px; border-radius: 6px; letter-spacing: 0.4px;
+      padding: 2px 7px; border-radius: 6px; letter-spacing: 0.3px;
     }
-    .title-card h1 { font-size: 16px; font-weight: 700; color: #f8fafc; line-height: 1.25; }
+    .title-card h1 { font-size: 15px; font-weight: 700; color: #f8fafc; line-height: 1.25; }
 
     .tabs-card {
       pointer-events: auto;
       background: rgba(10, 17, 32, 0.92); border: 1px solid #1e293b; border-radius: 14px;
-      padding: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+      padding: 5px; display: flex; flex-wrap: wrap; align-items: center; gap: 5px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
     .tab-btn {
-      padding: 10px 16px; border-radius: 10px; border: 1px solid transparent;
-      background: transparent; color: #cbd5e1; font-size: 13px; font-weight: 600;
+      padding: 8px 13px; border-radius: 10px; border: 1px solid transparent;
+      background: transparent; color: #cbd5e1; font-size: 12.5px; font-weight: 600;
       cursor: pointer; transition: 0.18s; text-align: center; line-height: 1.2;
     }
     .tab-btn:hover { background: rgba(30, 41, 59, 0.85); color: #fff; }
     .tab-btn.active {
       background: #0284c7; border-color: #38bdf8; color: #fff;
-      box-shadow: 0 0 18px rgba(2, 132, 199, 0.45);
+      box-shadow: 0 0 16px rgba(2, 132, 199, 0.45);
     }
 
-    #stage-wrap { position: relative; flex: 1; width: 100%; overflow: hidden; }
-    canvas { display: block; width: 100%; height: 100%; }
+    #stage-wrap { position: relative; flex: 1; width: 100%; min-height: 0; overflow: hidden; }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 
     #labels-layer { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
     .scene-tag {
       position: absolute; transform: translate(-50%, -50%);
       background: rgba(10, 17, 32, 0.92); border: 1px solid #475569; color: #f8fafc;
-      padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      padding: 4px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 600;
       white-space: nowrap; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
     }
 
     .side-panel {
-      position: absolute; top: 8px; left: 16px; width: 345px; max-width: calc(100vw - 32px);
+      position: absolute; top: 6px; left: 14px; width: 336px; max-width: calc(100vw - 28px);
+      max-height: calc(100% - 76px); overflow-y: auto;
       background: rgba(10, 17, 32, 0.93); backdrop-filter: blur(10px);
-      border: 1px solid #1e293b; border-radius: 16px; padding: 16px;
+      border: 1px solid #1e293b; border-radius: 16px; padding: 14px;
       z-index: 6; box-shadow: 0 14px 36px rgba(0, 0, 0, 0.6);
     }
-    .stage-kicker {
-      font-size: 11px; font-weight: 700; letter-spacing: 0.7px;
-      text-transform: uppercase; color: #38bdf8; margin-bottom: 6px;
+    .panel-toggle {
+      display: none; width: 100%; align-items: center; justify-content: space-between;
+      background: transparent; border: none; color: #38bdf8; font-size: 12px; font-weight: 700;
+      cursor: pointer; padding-bottom: 6px;
     }
-    .side-panel h2 { font-size: 18px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
-    .side-desc { font-size: 13px; color: #cbd5e1; line-height: 1.5; margin-bottom: 14px; }
+    .stage-kicker {
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.7px;
+      text-transform: uppercase; color: #38bdf8; margin-bottom: 4px;
+    }
+    .side-panel h2 { font-size: 16.5px; font-weight: 700; color: #f8fafc; margin-bottom: 6px; }
+    .side-desc { font-size: 12.5px; color: #cbd5e1; line-height: 1.45; margin-bottom: 12px; }
     .side-desc code { color: #38bdf8; font-family: ui-monospace, SFMono-Regular, monospace; }
 
     .ctrl-box {
       background: rgba(15, 23, 42, 0.88); border: 1px solid #1e293b;
-      border-radius: 12px; padding: 12px; margin-bottom: 10px;
+      border-radius: 12px; padding: 10px 12px; margin-bottom: 8px;
     }
-    .ctrl-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; }
+    .ctrl-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12.5px; }
     .ctrl-val {
       background: #0f172a; border: 1px solid #334155; color: #38bdf8;
-      padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;
+      padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 11.5px; white-space: nowrap;
     }
-    input[type="range"] { width: 100%; accent-color: #38bdf8; cursor: pointer; }
+    input[type="range"] { width: 100%; accent-color: #38bdf8; cursor: pointer; height: 22px; }
     .scale-ticks {
-      display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-top: 5px;
+      display: flex; justify-content: space-between; font-size: 10.5px; color: #64748b; margin-top: 3px;
     }
 
     .formula-box {
       background: rgba(9, 14, 26, 0.95); border-left: 3px solid #38bdf8;
-      border-radius: 8px; padding: 9px 12px; font-family: ui-monospace, SFMono-Regular, monospace;
-      font-size: 12px; color: #e2e8f0; margin-top: 8px; line-height: 1.45;
+      border-radius: 8px; padding: 8px 11px; font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11.5px; color: #e2e8f0; margin-top: 6px; line-height: 1.4;
     }
 
     .bottom-hud {
-      position: absolute; bottom: 14px; left: 16px; right: 16px;
-      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      position: absolute; bottom: 10px; left: 14px; right: 14px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
       pointer-events: none; z-index: 6;
     }
     .cam-group, .controls-hint {
       pointer-events: auto;
       background: rgba(10, 17, 32, 0.92); border: 1px solid #1e293b;
-      border-radius: 12px; padding: 6px 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-      font-size: 12px; color: #94a3b8; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      border-radius: 12px; padding: 5px 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 5px;
+      font-size: 11.5px; color: #94a3b8; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
     }
     .cam-btn {
-      padding: 6px 12px; border-radius: 8px; border: 1px solid #334155;
-      background: #111827; color: #e2e8f0; font-size: 12px; font-weight: 600; cursor: pointer;
+      padding: 5px 10px; border-radius: 8px; border: 1px solid #334155;
+      background: #111827; color: #e2e8f0; font-size: 11.5px; font-weight: 600; cursor: pointer;
     }
     .cam-btn:hover, .cam-btn.active { background: #1e293b; border-color: #38bdf8; color: #fff; }
+
+    @media (max-width: 768px) {
+      .top-bar { padding: 8px 10px; gap: 6px; }
+      .title-card { padding: 7px 11px; border-radius: 12px; width: 100%; }
+      .title-card h1 { font-size: 13px; }
+      .tabs-card { width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; border-radius: 12px; }
+      .tab-btn { padding: 7px 4px; font-size: 11px; border-radius: 8px; }
+
+      .side-panel {
+        top: auto; bottom: 54px; left: 10px; right: 10px; width: auto; max-width: none;
+        max-height: 46%; padding: 11px 12px; border-radius: 14px;
+      }
+      .panel-toggle { display: flex; }
+      .side-panel.collapsed .panel-body { display: none; }
+      .side-panel.collapsed { max-height: none; padding: 8px 12px; }
+      .side-panel h2 { font-size: 14.5px; }
+      .side-desc { font-size: 12px; margin-bottom: 8px; }
+      .ctrl-box { padding: 8px 10px; margin-bottom: 6px; }
+      .scene-tag { font-size: 10px; padding: 3px 7px; }
+
+      .bottom-hud { bottom: 8px; left: 10px; right: 10px; }
+      .cam-group { width: 100%; justify-content: space-between; padding: 4px 6px; }
+      .cam-group > span { display: none; }
+      .cam-btn { padding: 5px 7px; font-size: 10.5px; flex: 1; text-align: center; }
+      .controls-hint { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -120,7 +156,7 @@
       <button class="tab-btn active" data-mode="interference">1. Интерференция</button>
       <button class="tab-btn" data-mode="diffraction">2. Дифракция</button>
       <button class="tab-btn" data-mode="polarization">3. Поляризация</button>
-      <button class="tab-btn" data-mode="emwave">4. Волна<br>Максвелла</button>
+      <button class="tab-btn" data-mode="emwave">4. Волна Максвелла</button>
     </div>
   </div>
 
@@ -131,10 +167,10 @@
     <div class="bottom-hud">
       <div class="cam-group">
         <span>Камера:</span>
-        <button class="cam-btn active" onclick="setCamPreset('persp', this)">3D-перспектива</button>
-        <button class="cam-btn" onclick="setCamPreset('side', this)">Вид сбоку</button>
-        <button class="cam-btn" onclick="setCamPreset('top', this)">Вид сверху</button>
-        <button class="cam-btn" onclick="setCamPreset('screen', this)">Вид на экран</button>
+        <button class="cam-btn active" onclick="setCamPreset('persp', this)">3D-вид</button>
+        <button class="cam-btn" onclick="setCamPreset('side', this)">Сбоку</button>
+        <button class="cam-btn" onclick="setCamPreset('top', this)">Сверху</button>
+        <button class="cam-btn" onclick="setCamPreset('screen', this)">На экран</button>
       </div>
       <div class="controls-hint">
         ЛКМ / 1 палец — вращение • Колёсико / щипок — масштаб • ПКМ / 2 пальца — сдвиг
@@ -151,6 +187,8 @@
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x050811);
+
+    const isMobile = () => window.innerWidth <= 768;
 
     const camera = new THREE.PerspectiveCamera(45, Math.max(1, wrap.clientWidth) / Math.max(1, wrap.clientHeight), 0.1, 100);
     camera.position.set(6.8, 3.8, 8.8);
@@ -175,6 +213,7 @@
     scene.add(grid);
 
     let mode = 'interference';
+    let panelCollapsed = false;
     const state = {
       lambda: 530,
       slitDist: 1.8,
@@ -232,90 +271,112 @@
       animFn = null;
     }
 
+    window.togglePanel = () => {
+      panelCollapsed = !panelCollapsed;
+      panel.classList.toggle('collapsed', panelCollapsed);
+      const btn = document.getElementById('panelToggleBtn');
+      if (btn) btn.textContent = panelCollapsed ? 'Показать параметры ▲' : 'Свернуть параметры ▼';
+    };
+
     function renderPanel() {
+      panel.classList.toggle('collapsed', panelCollapsed);
+      const toggleHtml = `<button class="panel-toggle" id="panelToggleBtn" onclick="togglePanel()">${panelCollapsed ? 'Показать параметры ▲' : 'Свернуть параметры ▼'}</button>`;
+
       if (mode === 'interference') {
         const fringeIndex = ((state.lambda / 530) * (1.8 / state.slitDist)).toFixed(2);
         panel.innerHTML = `
-          <div class="stage-kicker">Этап 1 • Волновая природа</div>
-          <h2>Интерференция (опыт Юнга)</h2>
-          <p class="side-desc">
-            Когерентные волны от щелей <b>S₁</b> и <b>S₂</b> накладываются друг на друга: где разность хода <code>Δr = kλ</code> — возникают светлые максимумы, где <code>Δr = (2k+1)λ/2</code> — тёмные минимумы.
-          </p>
-          <div class="ctrl-box">
-            <div class="ctrl-top">
-              <span>Длина волны λ</span>
-              <span class="ctrl-val">${state.lambda} нм</span>
+          ${toggleHtml}
+          <div class="panel-body">
+            <div class="stage-kicker">Этап 1 • Волновая природа</div>
+            <h2>Интерференция (опыт Юнга)</h2>
+            <p class="side-desc">
+              Когерентные волны от щелей <b>S₁</b> и <b>S₂</b> накладываются: где <code>Δr = kλ</code> — максимумы, где <code>Δr = (2k+1)λ/2</code> — минимумы.
+            </p>
+            <div class="ctrl-box">
+              <div class="ctrl-top">
+                <span>Длина волны λ</span>
+                <span class="ctrl-val">${state.lambda} нм</span>
+              </div>
+              <input type="range" min="400" max="700" value="${state.lambda}" oninput="setParam('lambda', +this.value)">
+              <div class="scale-ticks"><span>400 нм</span><span>550 нм</span><span>700 нм</span></div>
             </div>
-            <input type="range" min="400" max="700" value="${state.lambda}" oninput="setParam('lambda', +this.value)">
-            <div class="scale-ticks"><span>400 нм (фиол.)</span><span>550 нм (зел.)</span><span>700 нм (красн.)</span></div>
-          </div>
-          <div class="ctrl-box">
-            <div class="ctrl-top">
-              <span>Расстояние между щелями d</span>
-              <span class="ctrl-val">${state.slitDist.toFixed(1)} усл. ед.</span>
+            <div class="ctrl-box">
+              <div class="ctrl-top">
+                <span>Расстояние d</span>
+                <span class="ctrl-val">${state.slitDist.toFixed(1)} усл. ед.</span>
+              </div>
+              <input type="range" min="0.8" max="2.6" step="0.1" value="${state.slitDist}" oninput="setParam('slitDist', +this.value)">
             </div>
-            <input type="range" min="0.8" max="2.6" step="0.1" value="${state.slitDist}" oninput="setParam('slitDist', +this.value)">
+            <div class="formula-box">Δx = λ · L / d • Ширина полос: ${fringeIndex}×</div>
           </div>
-          <div class="formula-box">Δx = λ · L / d<br>Относит. ширина полосы: ${fringeIndex}×</div>
         `;
       } else if (mode === 'diffraction') {
         const sinPhi1 = Math.min(0.95, (state.lambda * 1e-3) / state.gratingPeriod);
         const deg1 = ((Math.asin(sinPhi1) * 180) / Math.PI).toFixed(1);
         panel.innerHTML = `
-          <div class="stage-kicker">Этап 2 • Измерение длины волны</div>
-          <h2>Дифракция на решётке</h2>
-          <p class="side-desc">
-            Огибая узкие штрихи решётки, свет отклоняется от прямолинейного пути. Главные максимумы наблюдаются под углами <code>d·sin φ = kλ</code>.
-          </p>
-          <div class="ctrl-box">
-            <div class="ctrl-top">
-              <span>Длина волны лазера λ</span>
-              <span class="ctrl-val">${state.lambda} нм</span>
+          ${toggleHtml}
+          <div class="panel-body">
+            <div class="stage-kicker">Этап 2 • Измерение длины волны</div>
+            <h2>Дифракция на решётке</h2>
+            <p class="side-desc">
+              Свет отклоняется на штрихах решётки и образует максимумы порядков <code>k = 0, ±1, ±2</code> под углами <code>d·sin φ = kλ</code>.
+            </p>
+            <div class="ctrl-box">
+              <div class="ctrl-top">
+                <span>Длина волны λ</span>
+                <span class="ctrl-val">${state.lambda} нм</span>
+              </div>
+              <input type="range" min="400" max="700" value="${state.lambda}" oninput="setParam('lambda', +this.value)">
             </div>
-            <input type="range" min="400" max="700" value="${state.lambda}" oninput="setParam('lambda', +this.value)">
-          </div>
-          <div class="ctrl-box">
-            <div class="ctrl-top">
-              <span>Период решётки d</span>
-              <span class="ctrl-val">${state.gratingPeriod.toFixed(1)} мкм</span>
+            <div class="ctrl-box">
+              <div class="ctrl-top">
+                <span>Период решётки d</span>
+                <span class="ctrl-val">${state.gratingPeriod.toFixed(1)} мкм</span>
+              </div>
+              <input type="range" min="1.2" max="3.0" step="0.1" value="${state.gratingPeriod}" oninput="setParam('gratingPeriod', +this.value)">
             </div>
-            <input type="range" min="1.2" max="3.0" step="0.1" value="${state.gratingPeriod}" oninput="setParam('gratingPeriod', +this.value)">
+            <div class="formula-box">d · sin φ = k · λ • φ₁ ≈ ${deg1}°</div>
           </div>
-          <div class="formula-box">d · sin φ = k · λ  ⇒  λ ≈ (d · x₁) / L<br>Угол 1-го порядка (k = 1): φ₁ ≈ ${deg1}°</div>
         `;
       } else if (mode === 'polarization') {
         const rad = (state.analyzerAngle * Math.PI) / 180;
         const pct = Math.round(Math.pow(Math.cos(rad), 2) * 100);
         panel.innerHTML = `
-          <div class="stage-kicker">Этап 3 • Поперечность волны</div>
-          <h2>Поляризация света</h2>
-          <p class="side-desc">
-            Поляризатор выделяет колебания в одной плоскости, а анализатор пропускает составляющую вдоль угла <code>α</code>. При повороте на 90° свет гасится.
-          </p>
-          <div class="ctrl-box">
-            <div class="ctrl-top">
-              <span>Угол анализатора α</span>
-              <span class="ctrl-val">${state.analyzerAngle}° (I = ${pct}%)</span>
+          ${toggleHtml}
+          <div class="panel-body">
+            <div class="stage-kicker">Этап 3 • Поперечность волны</div>
+            <h2>Поляризация света</h2>
+            <p class="side-desc">
+              Поляризатор выделяет колебания в одной плоскости, а анализатор пропускает составляющую под углом <code>α</code>.
+            </p>
+            <div class="ctrl-box">
+              <div class="ctrl-top">
+                <span>Угол анализатора α</span>
+                <span class="ctrl-val">${state.analyzerAngle}° (I = ${pct}%)</span>
+              </div>
+              <input type="range" min="0" max="180" value="${state.analyzerAngle}" oninput="setParam('analyzerAngle', +this.value)">
             </div>
-            <input type="range" min="0" max="180" value="${state.analyzerAngle}" oninput="setParam('analyzerAngle', +this.value)">
+            <div class="formula-box">Закон Малюса: I = I₀ · cos²(${state.analyzerAngle}°)</div>
           </div>
-          <div class="formula-box">Закон Малюса: I = I₀ · cos²(${state.analyzerAngle}°)</div>
         `;
       } else {
         panel.innerHTML = `
-          <div class="stage-kicker">Этап 4 • Модель Максвелла</div>
-          <h2>Волна Максвелла</h2>
-          <p class="side-desc">
-            Световая волна — это связанные взаимно перпендикулярные колебания векторов <code>E</code> (электрическое поле) и <code>B</code> (магнитное поле), распространяющиеся со скоростью света.
-          </p>
-          <div class="ctrl-box">
-            <div class="ctrl-top">
-              <span>Длина волны λ</span>
-              <span class="ctrl-val">${state.lambda} нм</span>
+          ${toggleHtml}
+          <div class="panel-body">
+            <div class="stage-kicker">Этап 4 • Модель Максвелла</div>
+            <h2>Волна Максвелла</h2>
+            <p class="side-desc">
+              Взаимно перпендикулярные колебания электрического (<code>E</code>) и магнитного (<code>B</code>) полей распространяются со скоростью света.
+            </p>
+            <div class="ctrl-box">
+              <div class="ctrl-top">
+                <span>Длина волны λ</span>
+                <span class="ctrl-val">${state.lambda} нм</span>
+              </div>
+              <input type="range" min="400" max="700" value="${state.lambda}" oninput="setParam('lambda', +this.value)">
             </div>
-            <input type="range" min="400" max="700" value="${state.lambda}" oninput="setParam('lambda', +this.value)">
+            <div class="formula-box">E ⊥ B ⊥ c,   c ≈ 3 · 10⁸ м/с</div>
           </div>
-          <div class="formula-box">E ⊥ B ⊥ c,   c ≈ 3 · 10⁸ м/с</div>
         `;
       }
     }
@@ -333,7 +394,7 @@
       modeGroup.add(bench);
 
       const laser = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.26, 0.26, 1.35, 24),
+        new THREE.CylinderGeometry(0.26, 0.26, 1.35, 20),
         new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.4, roughness: 0.5 })
       );
       laser.rotation.z = Math.PI / 2;
@@ -341,7 +402,7 @@
       modeGroup.add(laser);
 
       const cone = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.14, 1.15, 2.55, 28, 1, true),
+        new THREE.CylinderGeometry(0.14, 1.15, 2.55, 24, 1, true),
         new THREE.MeshBasicMaterial({ color: hex, transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false })
       );
       cone.rotation.z = Math.PI / 2;
@@ -358,7 +419,6 @@
       botWall.position.set(-1.1, -0.35, halfD + 0.92);
       modeGroup.add(topWall, midWall, botWall);
 
-      // Опорные лучи от щелей S1 и S2 к центральному максимуму на экране
       for (const sZ of [-halfD, halfD]) {
         const p0 = new THREE.Vector3(-1.05, -0.35, sZ);
         const p1 = new THREE.Vector3(3.43, -0.35, 0);
@@ -373,16 +433,17 @@
       }
 
       const fronts = [];
+      const ringCount = isMobile() ? 6 : 9;
       for (const sZ of [-halfD, halfD]) {
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i < ringCount; i++) {
           const arc = new THREE.Mesh(
-            new THREE.RingGeometry(0.12, 0.2, 36, 1, -Math.PI / 2.3, Math.PI / 1.15),
+            new THREE.RingGeometry(0.12, 0.2, 28, 1, -Math.PI / 2.3, Math.PI / 1.15),
             new THREE.MeshBasicMaterial({ color: hex, side: THREE.DoubleSide, transparent: true, opacity: 0.55, depthWrite: false })
           );
           arc.rotation.x = -Math.PI / 2;
           arc.position.set(-1.02, -0.35, sZ);
           modeGroup.add(arc);
-          fronts.push({ mesh: arc, phase: i / 9 });
+          fronts.push({ mesh: arc, phase: i / ringCount });
         }
       }
 
@@ -401,12 +462,6 @@
         tctx.fillRect(x, 12, 1, 104);
       }
       tctx.globalAlpha = 1;
-      tctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
-      tctx.lineWidth = 1;
-      tctx.beginPath();
-      tctx.moveTo(0, 114);
-      tctx.lineTo(256, 114);
-      tctx.stroke();
 
       const screen = new THREE.Mesh(
         new THREE.BoxGeometry(0.14, 3.3, 4.6),
@@ -416,9 +471,9 @@
       modeGroup.add(screen);
 
       setLabels([
-        { text: 'Лазер (когерентный свет)', pos: [-4.2, 0.75, 0] },
-        { text: 'Две щели S₁ и S₂', pos: [-1.1, 1.65, 0] },
-        { text: 'Экран (интерференционные полосы)', pos: [3.5, 1.75, 0] }
+        { text: 'Лазер', pos: [-4.2, 0.7, 0] },
+        { text: 'Щели S₁, S₂', pos: [-1.1, 1.65, 0] },
+        { text: 'Экран (полосы)', pos: [3.5, 1.75, 0] }
       ]);
 
       animFn = (t) => {
@@ -444,7 +499,7 @@
       modeGroup.add(bench);
 
       const laser = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.24, 0.24, 1.2, 24),
+        new THREE.CylinderGeometry(0.24, 0.24, 1.2, 20),
         new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.4, roughness: 0.5 })
       );
       laser.rotation.z = Math.PI / 2;
@@ -458,7 +513,6 @@
       grating.position.set(-2.0, -0.3, 0);
       modeGroup.add(grating);
 
-      // Штрихи дифракционной решётки на пластине
       for (let i = -8; i <= 8; i++) {
         const lineMesh = new THREE.Mesh(
           new THREE.BoxGeometry(0.14, 2.8, 0.03),
@@ -468,7 +522,6 @@
         modeGroup.add(lineMesh);
       }
 
-      // Экран со шкалой
       const scaleCanvas = document.createElement('canvas');
       scaleCanvas.width = 256;
       scaleCanvas.height = 128;
@@ -495,7 +548,7 @@
       modeGroup.add(screen);
 
       const inBeam = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.07, 0.07, 2.2, 12),
+        new THREE.CylinderGeometry(0.07, 0.07, 2.2, 10),
         new THREE.MeshBasicMaterial({ color: hex })
       );
       inBeam.rotation.z = Math.PI / 2;
@@ -510,7 +563,7 @@
         const p1 = new THREE.Vector3(3.32, -0.3, zEnd);
         const dir = new THREE.Vector3().subVectors(p1, p0);
         const beam = new THREE.Mesh(
-          new THREE.CylinderGeometry(k === 0 ? 0.065 : 0.04, k === 0 ? 0.065 : 0.04, dir.length(), 10),
+          new THREE.CylinderGeometry(k === 0 ? 0.065 : 0.04, k === 0 ? 0.065 : 0.04, dir.length(), 8),
           new THREE.MeshBasicMaterial({ color: hex, transparent: true, opacity: k === 0 ? 0.95 : 0.72 })
         );
         beam.position.copy(p0).add(p1).multiplyScalar(0.5);
@@ -518,7 +571,7 @@
         modeGroup.add(beam);
 
         const spot = new THREE.Mesh(
-          new THREE.SphereGeometry(k === 0 ? 0.15 : 0.11, 14, 14),
+          new THREE.SphereGeometry(k === 0 ? 0.15 : 0.11, 12, 12),
           new THREE.MeshBasicMaterial({ color: hex })
         );
         spot.position.copy(p1);
@@ -526,20 +579,20 @@
       });
 
       setLabels([
-        { text: 'Дифракционная решётка (период d)', pos: [-2.0, 1.65, 0] },
-        { text: 'Экран со шкалой (L = 1.50 м)', pos: [3.4, 1.75, 0] }
+        { text: 'Решётка (d)', pos: [-2.0, 1.65, 0] },
+        { text: 'Экран со шкалой', pos: [3.4, 1.75, 0] }
       ]);
     }
 
     function createArrow(color) {
       const group = new THREE.Group();
       const shaft = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.022, 0.022, 1, 8),
+        new THREE.CylinderGeometry(0.022, 0.022, 1, 6),
         new THREE.MeshBasicMaterial({ color })
       );
       shaft.position.y = 0.5;
       const head = new THREE.Mesh(
-        new THREE.ConeGeometry(0.075, 0.2, 10),
+        new THREE.ConeGeometry(0.075, 0.2, 8),
         new THREE.MeshBasicMaterial({ color })
       );
       head.position.y = 1.05;
@@ -595,13 +648,13 @@
       modeGroup.add(axis);
 
       const sourceOuter = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.15, 1.15, 0.14, 32),
+        new THREE.CylinderGeometry(1.15, 1.15, 0.14, 24),
         new THREE.MeshStandardMaterial({ color: 0xca8a04, transparent: true, opacity: 0.35 })
       );
       sourceOuter.rotation.z = Math.PI / 2;
       sourceOuter.position.set(-3.4, 0, 0);
       const sourceCore = new THREE.Mesh(
-        new THREE.CircleGeometry(0.85, 32),
+        new THREE.CircleGeometry(0.85, 24),
         new THREE.MeshBasicMaterial({ color: 0xfef08a })
       );
       sourceCore.rotation.y = Math.PI / 2;
@@ -609,7 +662,7 @@
       modeGroup.add(sourceOuter, sourceCore);
 
       const polRing = new THREE.Mesh(
-        new THREE.TorusGeometry(1.25, 0.055, 12, 40),
+        new THREE.TorusGeometry(1.25, 0.055, 10, 32),
         new THREE.MeshStandardMaterial({ color: 0x38bdf8 })
       );
       polRing.rotation.y = Math.PI / 2;
@@ -624,7 +677,7 @@
       const anaGroup = new THREE.Group();
       anaGroup.position.set(1.3, 0, 0);
       const anaRing = new THREE.Mesh(
-        new THREE.TorusGeometry(1.25, 0.055, 12, 40),
+        new THREE.TorusGeometry(1.25, 0.055, 10, 32),
         new THREE.MeshStandardMaterial({ color: 0xf59e0b })
       );
       anaRing.rotation.y = Math.PI / 2;
@@ -637,13 +690,13 @@
       modeGroup.add(anaGroup);
 
       const scrFrame = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.15, 1.15, 0.16, 32),
+        new THREE.CylinderGeometry(1.15, 1.15, 0.16, 24),
         new THREE.MeshStandardMaterial({ color: 0x1e293b })
       );
       scrFrame.rotation.z = Math.PI / 2;
       scrFrame.position.set(3.7, 0, 0);
       const scrFace = new THREE.Mesh(
-        new THREE.CircleGeometry(0.95, 32),
+        new THREE.CircleGeometry(0.95, 24),
         new THREE.MeshBasicMaterial({
           color: new THREE.Color(inten * 0.98, inten * 0.85, inten * 0.35)
         })
@@ -652,42 +705,44 @@
       scrFace.position.set(3.61, 0, 0);
       modeGroup.add(scrFrame, scrFace);
 
-      const n1 = makeWaveLine(-3.2, -1.1, 36, 0xfacc15);
-      const n2 = makeWaveLine(-3.2, -1.1, 36, 0xf59e0b);
-      const pWave = makeWaveLine(-1.1, 1.3, 40, 0x38bdf8);
-      const aWave = makeWaveLine(1.3, 3.55, 40, 0xf59e0b);
+      const segs = isMobile() ? 24 : 36;
+      const n1 = makeWaveLine(-3.2, -1.1, segs, 0xfacc15);
+      const n2 = makeWaveLine(-3.2, -1.1, segs, 0xf59e0b);
+      const pWave = makeWaveLine(-1.1, 1.3, segs, 0x38bdf8);
+      const aWave = makeWaveLine(1.3, 3.55, segs, 0xf59e0b);
       modeGroup.add(n1.line, n2.line, pWave.line, aWave.line);
 
+      const arrowCnt = isMobile() ? 4 : 6;
       const preArrows = [];
-      for (let i = 0; i < 6; i++) {
-        const x = -2.95 + i * 0.34;
+      for (let i = 0; i < arrowCnt; i++) {
+        const x = -2.95 + i * (2.0 / Math.max(1, arrowCnt - 1));
         const a1 = createArrow(0xfacc15);
         const a2 = createArrow(0xf59e0b);
         modeGroup.add(a1, a2);
-        preArrows.push({ x, a1, a2, angle: (i * 0.85) });
+        preArrows.push({ x, a1, a2, angle: i * 0.9 });
       }
 
       const midArrows = [];
-      for (let i = 0; i < 6; i++) {
-        const x = -0.85 + i * 0.4;
+      for (let i = 0; i < arrowCnt; i++) {
+        const x = -0.85 + i * (2.1 / Math.max(1, arrowCnt - 1));
         const ar = createArrow(0x38bdf8);
         modeGroup.add(ar);
         midArrows.push({ x, ar });
       }
 
       const postArrows = [];
-      for (let i = 0; i < 6; i++) {
-        const x = 1.55 + i * 0.36;
+      for (let i = 0; i < arrowCnt; i++) {
+        const x = 1.55 + i * (1.9 / Math.max(1, arrowCnt - 1));
         const ar = createArrow(0xf59e0b);
         modeGroup.add(ar);
         postArrows.push({ x, ar });
       }
 
       setLabels([
-        { text: 'Естественный свет (много плоскостей)', pos: [-3.3, 1.65, 0] },
-        { text: 'Поляризатор (ось 0°)', pos: [-1.1, 1.85, 0] },
-        { text: 'Анализатор (угол α)', pos: [1.3, 1.85, 0] },
-        { text: 'Экран (закон Малюса)', pos: [3.7, 1.65, 0] }
+        { text: 'Естественный свет', pos: [-3.3, 1.65, 0] },
+        { text: 'Поляризатор (0°)', pos: [-1.1, 1.85, 0] },
+        { text: `Анализатор (${state.analyzerAngle}°)`, pos: [1.3, 1.85, 0] },
+        { text: 'Экран', pos: [3.7, 1.65, 0] }
       ]);
 
       animFn = (t) => {
@@ -751,12 +806,12 @@
       axis.rotation.z = Math.PI / 2;
       modeGroup.add(axis);
 
-      const segs = 100;
+      const segs = isMobile() ? 64 : 96;
       const eLine = makeWaveLine(-4.5, 4.5, segs, 0xf43f5e);
       const bLine = makeWaveLine(-4.5, 4.5, segs, 0x38bdf8);
       modeGroup.add(eLine.line, bLine.line);
 
-      const count = 20;
+      const count = isMobile() ? 14 : 20;
       const eBars = [], bBars = [];
       for (let i = 0; i < count; i++) {
         const x = -4.4 + (i / (count - 1)) * 8.8;
@@ -769,8 +824,8 @@
       }
 
       setLabels([
-        { text: 'Вектор E (электрическое поле)', pos: [-2.0, 1.75, 0] },
-        { text: 'Вектор B (магнитное поле)', pos: [1.8, 0.35, 1.65] }
+        { text: 'Вектор E', pos: [-2.0, 1.75, 0] },
+        { text: 'Вектор B', pos: [1.8, 0.35, 1.65] }
       ]);
 
       animFn = (t) => {
@@ -808,14 +863,19 @@
       rebuildStage();
     };
 
+    function applyCameraDistance(basePos) {
+      const factor = isMobile() ? 1.32 : 1.0;
+      camera.position.set(basePos[0] * factor, basePos[1] * factor, basePos[2] * factor);
+    }
+
     window.setCamPreset = (preset, btn) => {
       document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
       controls.target.set(0.7, -0.25, 0);
-      if (preset === 'persp') camera.position.set(6.8, 3.8, 8.8);
-      else if (preset === 'side') camera.position.set(0.3, 0.4, 10.5);
-      else if (preset === 'top') camera.position.set(0.5, 11.5, 0.1);
-      else if (preset === 'screen') camera.position.set(9.2, 0.4, 0);
+      if (preset === 'persp') applyCameraDistance([6.8, 3.8, 8.8]);
+      else if (preset === 'side') applyCameraDistance([0.3, 0.4, 10.5]);
+      else if (preset === 'top') applyCameraDistance([0.5, 11.5, 0.1]);
+      else if (preset === 'screen') applyCameraDistance([9.2, 0.4, 0]);
       controls.update();
       updateLabelsPos();
     };
@@ -831,13 +891,16 @@
 
     controls.addEventListener('change', updateLabelsPos);
 
-    window.addEventListener('resize', () => {
+    function handleResize() {
       camera.aspect = Math.max(1, wrap.clientWidth) / Math.max(1, wrap.clientHeight);
       camera.updateProjectionMatrix();
       renderer.setSize(wrap.clientWidth, wrap.clientHeight);
       updateLabelsPos();
-    });
+    }
 
+    window.addEventListener('resize', handleResize);
+
+    applyCameraDistance([6.8, 3.8, 8.8]);
     rebuildStage();
 
     const clock = new THREE.Clock();
